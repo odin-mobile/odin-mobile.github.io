@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Lecture seule par construction : aucune source externe, un seul fichier de donnees (etat.chiffre.json). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#090016">
+<meta name="color-scheme" content="dark">
+<title>ODIN Mobile</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="app.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+
+<!-- ═══════════ VERROU : la phrase secrete, demandee une seule fois ═══════════ -->
+<section id="verrou" class="verrou" hidden>
+  <div class="verrou-carte">
+    <div class="orbe-logo" aria-hidden="true"></div>
+    <h1 class="hero">ODIN</h1>
+    <p class="sous">MOBILE · LECTURE SEULE</p>
+    <form id="form-phrase" class="form-phrase" autocomplete="off">
+      <label for="phrase">Phrase secrète</label>
+      <input id="phrase" type="password" autocomplete="current-password" spellcheck="false" autocapitalize="off" required minlength="12">
+      <button type="submit" class="btn-principal">Déverrouiller</button>
+    </form>
+    <p id="verrou-msg" class="verrou-msg" role="status" aria-live="polite"></p>
+    <p class="verrou-note">La phrase reste sur ce téléphone. Elle sert seulement à lire l'état chiffré d'ODIN.</p>
+  </div>
+</section>
+
+<!-- ═══════════ L'APPLI ═══════════ -->
+<div id="appli" class="appli" hidden>
+  <header class="barre-haut">
+    <div class="marque">
+      <div class="orbe-mini" aria-hidden="true"></div>
+      <div>
+        <div class="logo-texte">ODIN</div>
+        <div class="logo-sous">LECTURE SEULE</div>
+      </div>
+    </div>
+    <div class="etat-au">
+      <span id="etat-date" class="mono">—</span>
+      <span id="badge-reseau" class="badge" hidden>HORS LIGNE</span>
+    </div>
+  </header>
+  <div id="bandeau-ancien" class="bandeau-ancien" role="status" hidden></div>
+
+  <main class="contenu">
+    <!-- ═════ ÉCRAN 1 : COMMAND ═════ -->
+    <section id="vue-command" class="vue" aria-labelledby="t-command">
+      <h2 id="t-command" class="vh">Command</h2>
+      <div class="plaque briefing">
+        <div class="plaque-tete"><span class="plaque-titre">Briefing</span><span id="br-verdict" class="pastille"></span></div>
+        <div id="br-salut" class="salut">BONJOUR</div>
+        <p id="br-resume" class="resume"></p>
+        <p id="br-news" class="news-courte"></p>
+      </div>
+
+      <div class="scene-carte">
+        <div class="scene-onglets" role="tablist" aria-label="Vue 3D">
+          <button role="tab" class="onglet actif" data-scene="sphere" aria-selected="true">Sphère</button>
+          <button role="tab" class="onglet" data-scene="chambre" aria-selected="false">Chambre</button>
+          <button role="tab" class="onglet" data-scene="triade" aria-selected="false">Triade IA</button>
+          <button role="tab" class="onglet" data-scene="galaxie" aria-selected="false">Galaxie</button>
+        </div>
+        <canvas id="scene" class="scene" aria-label="Vue 3D des agents d'ODIN. Glisser pour tourner, toucher une orbe pour l'ouvrir."></canvas>
+        <div id="scene-lecture" class="scene-lecture mono" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="plaque">
+        <div class="plaque-tete"><span class="plaque-titre rose">À traiter</span><span id="nb-traiter" class="compte mono"></span></div>
+        <div id="liste-traiter" class="liste-signaux"></div>
+      </div>
+
+      <div class="plaque">
+        <div class="plaque-tete"><span class="plaque-titre">Clés & abonnements</span><span id="depenses" class="compte mono"></span></div>
+        <div id="jauges" class="jauges"></div>
+      </div>
+    </section>
+
+    <!-- ═════ ÉCRAN 2 : AGENTS ═════ -->
+    <section id="vue-agents" class="vue" hidden aria-labelledby="t-agents">
+      <h2 id="t-agents" class="titre-ecran">LES AGENTS</h2>
+      <div class="filtres" role="group" aria-label="Filtrer les agents">
+        <button class="filtre actif" data-filtre="tous" aria-pressed="true">Tous <b id="f-tous"></b></button>
+        <button class="filtre" data-filtre="traiter" aria-pressed="false">À traiter <b id="f-traiter"></b></button>
+        <button class="filtre" data-filtre="ia" aria-pressed="false">Avec IA <b id="f-ia"></b></button>
+        <button class="filtre" data-filtre="sans" aria-pressed="false">Sans IA <b id="f-sans"></b></button>
+      </div>
+      <div id="groupes-agents"></div>
+    </section>
+
+    <!-- ═════ ÉCRAN 3 : NEXUS ═════ -->
+    <section id="vue-nexus" class="vue" hidden aria-labelledby="t-nexus">
+      <h2 id="t-nexus" class="titre-ecran">AI NEXUS</h2>
+      <p id="nx-sous" class="sous-ecran mono"></p>
+      <div class="plaque">
+        <div class="plaque-tete"><span class="plaque-titre">Part des jetons · 30 jours</span></div>
+        <div id="nx-barres" class="barres30" role="group" aria-label="Jetons par jour, touche une journée"></div>
+        <div id="nx-axe" class="axe mono"></div>
+        <div id="nx-jour" class="lecture-jour mono" role="status" aria-live="polite">Touche une journée pour voir le détail.</div>
+        <div id="nx-legende" class="legende mono"></div>
+      </div>
+      <div class="plaque">
+        <div class="plaque-tete"><span class="plaque-titre">Modèles choisis</span><span class="compte mono">IA connectée</span></div>
+        <div id="nx-modeles" class="modeles"></div>
+      </div>
+      <div class="plaque">
+        <div class="plaque-tete"><span class="plaque-titre">Qui fait quoi</span></div>
+        <div id="nx-roles"></div>
+      </div>
+    </section>
+
+    <!-- ═════ ÉCRAN 4 : SYNTHÈSE ═════ -->
+    <section id="vue-synthese" class="vue" hidden aria-labelledby="t-synthese">
+      <h2 id="t-synthese" class="titre-ecran">SYNTHÈSE</h2>
+      <p id="sy-sous" class="sous-ecran mono"></p>
+      <div class="plaque">
+        <div class="plaque-tete"><span class="plaque-titre">Vault Obsidian</span></div>
+        <div id="sy-tuiles" class="tuiles"></div>
+        <div id="sy-statuts" class="statuts"></div>
+      </div>
+      <div class="plaque">
+        <div class="plaque-tete"><span class="plaque-titre">Cases ouvertes</span><span id="sy-nbcases" class="compte mono"></span></div>
+        <ul id="sy-cases" class="cases"></ul>
+      </div>
+      <div class="plaque">
+        <div class="plaque-tete"><span class="plaque-titre">AI Daily News</span><span id="sy-news-date" class="compte mono"></span></div>
+        <div id="sy-news-titre" class="news-titre"></div>
+        <p id="sy-news-ton" class="news-ton"></p>
+      </div>
+      <div class="plaque">
+        <div class="plaque-tete"><span class="plaque-titre">Projets</span><span id="sy-nbprojets" class="compte mono"></span></div>
+        <ul id="sy-projets" class="projets"></ul>
+      </div>
+      <div class="pied">
+        <button id="oublier" class="btn-discret">Oublier la phrase</button>
+        <p class="mono pied-note">ODIN Mobile · lecture seule · aucune clé d'IA · polices Saira, Orbitron, IBM Plex Mono (licence OFL)</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav-bas" aria-label="Écrans">
+    <button class="nav-btn actif" data-vue="command" aria-current="page">COMMAND</button>
+    <button class="nav-btn" data-vue="agents">AGENTS <span id="nav-nb" class="mono"></span></button>
+    <button class="nav-btn" data-vue="nexus">NEXUS</button>
+    <button class="nav-btn" data-vue="synthese">VAULT</button>
+  </nav>
+</div>
+
+<!-- ═══════════ FICHE D'UN AGENT (lecture seule) ═══════════ -->
+<dialog id="fiche" class="fiche" aria-labelledby="fi-nom">
+  <div class="fiche-tete">
+    <div id="fi-sig" class="glyphe grand"></div>
+    <div class="fiche-noms">
+      <div id="fi-nom" class="fiche-nom"></div>
+      <div id="fi-sous" class="mono fiche-sous"></div>
+    </div>
+    <button id="fi-fermer" class="fermer" aria-label="Fermer">✕</button>
+  </div>
+  <div class="tuiles fiche-tuiles">
+    <div class="tuile"><div class="t-lib">DERNIÈRE RONDE</div><div id="fi-ronde" class="t-val"></div></div>
+    <div class="tuile"><div class="t-lib">RYTHME</div><div id="fi-rythme" class="t-val"></div></div>
+    <div class="tuile"><div class="t-lib">MOTEUR</div><div id="fi-moteur" class="t-val"></div></div>
+    <div class="tuile"><div class="t-lib">PÔLE</div><div id="fi-pole" class="t-val"></div></div>
+  </div>
+  <div class="fiche-constats">
+    <div class="t-lib rose">CONSTATS À REGARDER</div>
+    <ul id="fi-alertes"></ul>
+  </div>
+  <p class="mono fiche-note">Consultation seule : n'applique rien, ne relance rien.</p>
+</dialog>
+
+</body>
+</html>

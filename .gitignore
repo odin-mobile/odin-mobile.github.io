@@ -1,0 +1,17 @@
+# Le depot public ne contient QUE l'appli et l'etat chiffre.
+*
+!.gitignore
+!index.html
+!app.css
+!app.js
+!scenes.js
+!crypto-odin.js
+!chambre-poles.js
+!sw.js
+!manifest.webmanifest
+!etat.chiffre.json
+!README.md
+!icons/
+!icons/*
+!fonts/
+!fonts/*
