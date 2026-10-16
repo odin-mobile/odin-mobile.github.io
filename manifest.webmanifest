@@ -3,6 +3,7 @@
   "short_name": "ODIN",
   "description": "Le dernier état connu d'ODIN, en lecture seule.",
   "lang": "fr",
+  "id": "/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
