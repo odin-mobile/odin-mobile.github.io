@@ -95,32 +95,89 @@
   --trait-faible: rgba(15, 23, 42, .1);
   --bandeau-fond: rgba(217, 119, 6, .1); --bandeau-ink: #92400e;
 }
+/* ── TOKYO · NIGHT CITY (2026-10-18, demande d'Amir : vraiment different du Neon) ──
+      Gris-noir metal brosse, jaune neon dominant, cyan en second, rouge d'alerte.
+      Coins coupes en biseau, titres « glitch », bouton actif jaune plein. ── */
 [data-theme="tokyo"] {
-  --rgb-beam: 0,240,255; --rgb-flag: 255,0,127; --rgb-halt: 255,59,48; --rgb-seal: 252,238,10;
-  --rgb-a2: 255,0,127; --rgb-a3: 255,0,127;
-  --c-void: #040008; --c-abyss: #0b0114; --c-hull: #10031a; --c-plate: #160424; --c-ridge: #5a0a3c;
-  --c-beam: #00f0ff; --c-beam-hi: #d6fdff;
-  --c-flag: #ff007f; --c-flag-hi: #ff8cc6;
-  --c-halt: #ff3b30; --c-halt-hi: #ff8a80;
-  --c-seal: #fcee0a;
-  --c-a2: #ff007f; --c-a4: #ff9500;
-  --ink-1: #fff0f8; --ink-2: #f5b8d8; --ink-3: #b98aa9;
-  --plate-mid: linear-gradient(135deg, rgba(28,4,42,.92), rgba(10,4,24,.95));
-  --plate-well: rgba(12, 2, 22, .95);
-  --edge: rgba(255, 0, 127, .42);
-  --edge-rose: rgba(252, 238, 10, .6);
-  --drop: 0 16px 40px rgba(0,0,0,.85), 0 0 22px rgba(255,0,127,.14);
-  --v-pause: #8a93a8; --v-vu: #ff9500;
-  --bg-barre: rgba(14, 2, 24, .92);
-  --bg-nav: rgba(12, 2, 20, .97);
-  --bg-pill: rgba(26, 4, 40, .86);
-  --bg-lecture: rgba(12, 2, 22, .95);
-  --bg-glyphe: rgba(18, 2, 30, .96);
-  --bg-tuile: rgba(14, 2, 24, .94);
-  --bg-fiche: linear-gradient(160deg, #1f032e 0%, #090214 65%, #041524 100%);
-  --bg-voile: rgba(0, 0, 0, .78);
-  --bg-scene: radial-gradient(circle at 50% 45%, rgba(255,0,127,.16) 0%, rgba(0,240,255,.08) 38%, rgba(6,0,12,.98) 82%);
+  --rgb-beam: 252,238,10; --rgb-flag: 255,42,109; --rgb-halt: 255,0,60; --rgb-seal: 0,240,255;
+  --rgb-a2: 0,240,255; --rgb-a3: 252,238,10;
+  --c-void: #0b0c0e; --c-abyss: #121418; --c-hull: #181b20; --c-plate: #1e2228; --c-ridge: #3a3f47;
+  --c-beam: #fcee0a; --c-beam-hi: #fffbd1;
+  --c-flag: #ff2a6d; --c-flag-hi: #ff8fb1;
+  --c-halt: #ff003c; --c-halt-hi: #ff6b81;
+  --c-seal: #00f0ff;
+  --c-a2: #00f0ff; --c-a4: #ff9500;
+  --ink-1: #eef0f2; --ink-2: #b4bcc6; --ink-3: #7d8691;
+  --plate-mid: linear-gradient(160deg, rgba(36,40,47,.94) 0%, rgba(20,23,27,.96) 55%, rgba(14,16,19,.98) 100%);
+  --plate-well: rgba(10, 11, 13, .9);
+  --edge: rgba(252, 238, 10, .38);
+  --edge-rose: rgba(255, 0, 60, .6);
+  --bevel: inset 0 1px 0 0 rgba(255,255,255,.07), inset 0 -1px 0 0 rgba(0,0,0,.6);
+  --drop: 0 10px 26px -8px rgba(0,0,0,.9), 0 0 16px -6px rgba(252,238,10,.28);
+  --glow-beam: 0 0 12px rgba(252, 238, 10, .55);
+  --v-pause: #7d8691; --v-vu: #ff9500; --v-inconnu: #7d8691;
+  --bg-barre: rgba(11, 12, 14, .94);
+  --bg-nav: rgba(14, 16, 19, .97);
+  --bg-pill: rgba(24, 27, 32, .92);
+  --bg-lecture: rgba(10, 11, 13, .94);
+  --bg-glyphe: rgba(12, 13, 16, .96);
+  --bg-tuile: rgba(16, 18, 22, .94);
+  --bg-fiche: linear-gradient(160deg, #23272e 0%, #15181c 60%, #0d0f12 100%);
+  --bg-voile: rgba(0, 0, 0, .8);
+  --bg-scene: radial-gradient(circle at 50% 45%, rgba(252,238,10,.12) 0%, rgba(0,240,255,.06) 35%, rgba(11,12,14,.98) 78%);
+  --trait-faible: rgba(255, 255, 255, .09);
 }
+/* Fond : metal brosse + grille fine, puis lignes de balayage par-dessus tout (sans bloquer le toucher) */
+[data-theme="tokyo"] body {
+  background-color: #0b0c0e;
+  background-image:
+    radial-gradient(ellipse at 15% 0%, rgba(252,238,10,.10) 0%, transparent 45%),
+    radial-gradient(ellipse at 90% 35%, rgba(0,240,255,.08) 0%, transparent 42%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.018) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #16191d 0%, #0b0c0e 60%, #08090a 100%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+}
+[data-theme="tokyo"] body::after {
+  content: ""; position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px);
+}
+/* Coins coupes en biseau (la signature Night City) */
+[data-theme="tokyo"] .plaque, [data-theme="tokyo"] .carte-agent, [data-theme="tokyo"] .sk,
+[data-theme="tokyo"] .scene-carte, [data-theme="tokyo"] .verrou-carte, [data-theme="tokyo"] .jauge,
+[data-theme="tokyo"] .signal, [data-theme="tokyo"] .modele {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+[data-theme="tokyo"] .plaque, [data-theme="tokyo"] .sk, [data-theme="tokyo"] .carte-agent { border-left: 3px solid var(--c-beam); }
+[data-theme="tokyo"] .carte-agent.grave { border-left-color: var(--c-halt); }
+[data-theme="tokyo"] .sk[open] { border-color: var(--c-a2); border-left-color: var(--c-a2); }
+[data-theme="tokyo"] .plaque-titre { color: var(--c-beam); }
+[data-theme="tokyo"] .plaque-titre::before { content: "▮ "; color: var(--c-a2); }
+[data-theme="tokyo"] .plaque-tete { border-bottom-color: rgba(252,238,10,.25); }
+/* Titres « glitch » : decalage rouge / cyan + lueur jaune */
+[data-theme="tokyo"] .titre-ecran, [data-theme="tokyo"] .salut, [data-theme="tokyo"] .hero, [data-theme="tokyo"] .logo-texte {
+  color: var(--c-beam);
+  text-shadow: 2px 0 rgba(255,0,60,.75), -2px 0 rgba(0,240,255,.75), 0 0 16px rgba(252,238,10,.55);
+}
+[data-theme="tokyo"] .barre-haut { border-bottom: 2px solid var(--c-beam); box-shadow: 0 2px 18px -4px rgba(252,238,10,.45); }
+[data-theme="tokyo"] .orbe-mini, [data-theme="tokyo"] .orbe-logo { border-radius: 0; transform: rotate(45deg); border-color: var(--c-beam); }
+[data-theme="tokyo"] .orbe-mini::after, [data-theme="tokyo"] .orbe-logo::after { border-radius: 0; background: var(--c-a2); box-shadow: 0 0 12px var(--c-a2); }
+/* Actif = bloc jaune plein, texte noir */
+[data-theme="tokyo"] .nav-bas { border-radius: 0; border: 1px solid var(--c-beam);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px)); }
+[data-theme="tokyo"] .nav-btn { border-radius: 0; }
+[data-theme="tokyo"] .nav-btn.actif, [data-theme="tokyo"] .filtre.actif, [data-theme="tokyo"] .onglet.actif,
+[data-theme="tokyo"] .btn-principal {
+  background: var(--c-beam); color: #0b0c0e; border-color: var(--c-beam); box-shadow: 0 0 16px rgba(252,238,10,.55);
+}
+[data-theme="tokyo"] .filtre.actif b { color: #0b0c0e; }
+[data-theme="tokyo"] .filtre, [data-theme="tokyo"] .onglet, [data-theme="tokyo"] .cherche,
+[data-theme="tokyo"] .form-phrase input, [data-theme="tokyo"] .btn-discret, [data-theme="tokyo"] .themes { border-radius: 0; }
+[data-theme="tokyo"] .filtre, [data-theme="tokyo"] .onglet { border-color: rgba(0,240,255,.45); }
+[data-theme="tokyo"] .pastille { border-radius: 0; }
+[data-theme="tokyo"] .sk-nom { color: var(--c-a2); text-shadow: 0 0 10px rgba(0,240,255,.45); }
+[data-theme="tokyo"] .sk-nom::after { color: var(--c-beam); }
+[data-theme="tokyo"] .groupe-titre::before { border-radius: 0; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 [hidden] { display: none !important; }
@@ -388,7 +445,7 @@ button { font: inherit; color: inherit; }
 .theme-btn[aria-pressed="true"] i { border-color: var(--ink-1); box-shadow: 0 0 10px var(--c-beam); }
 .theme-btn[data-theme-id="neon"] i { background: linear-gradient(135deg, #b026ff 0%, #ff2bd6 50%, #00f0ff 100%); }
 .theme-btn[data-theme-id="white"] i { background: linear-gradient(135deg, #ffffff 30%, #bae6fd 70%, #e0e7ff 100%); box-shadow: inset 0 0 0 1px rgba(2,132,199,.45); }
-.theme-btn[data-theme-id="tokyo"] i { background: linear-gradient(135deg, #ff007f 0%, #fcee0a 55%, #00f0ff 100%); }
+.theme-btn[data-theme-id="tokyo"] i { background: linear-gradient(135deg, #2a2e35 0 30%, #fcee0a 30% 62%, #00f0ff 62% 100%); }
 
 /* ═════════ COMPETENCES ═════════ */
 .cherche {

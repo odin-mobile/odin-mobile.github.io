@@ -476,7 +476,7 @@ document.querySelectorAll('.filtre[data-cible]').forEach(b => b.addEventListener
 $('sk-cherche').addEventListener('input', e => { chercheSk = e.target.value; if (E) rendreSkills(); });
 
 /* ═════════ Theme (propre a ce telephone ; theme.js l'a deja pose au chargement) ═════════ */
-const THEMES = { neon: '#090016', white: '#f5f7ff', tokyo: '#040008' };   // couleur de la barre du systeme
+const THEMES = { neon: '#090016', white: '#f5f7ff', tokyo: '#0b0c0e' };   // couleur de la barre du systeme
 function appliquerTheme(id) {
   if (!THEMES[id]) id = 'neon';
   document.documentElement.dataset.theme = id;

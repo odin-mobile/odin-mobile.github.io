@@ -30,9 +30,9 @@ const PALETTES = {
   white: { beam: '#0284c7', flag: '#e11d48', halt: '#dc2626', seal: '#059669', a2: '#4f46e5', a4: '#d97706',
            ink1: '#0f172a', ink2: '#334155', ink3: '#64748b', pause: '#94a3b8',
            claude: '#ea580c', gemini: '#4f46e5', chatgpt: '#059669', odin: '#0f172a', noyau: '#bae6fd', fondOrbe: '#1e293b' },
-  tokyo: { beam: '#00f0ff', flag: '#ff007f', halt: '#ff3b30', seal: '#fcee0a', a2: '#ff007f', a4: '#ff9500',
-           ink1: '#fff0f8', ink2: '#f5b8d8', ink3: '#b98aa9', pause: '#8a7a90',
-           claude: '#D97757', gemini: '#5B8CFF', chatgpt: '#19C39C', odin: '#fcee0a', noyau: '#180226', fondOrbe: '#06000c' },
+  tokyo: { beam: '#fcee0a', flag: '#ff2a6d', halt: '#ff003c', seal: '#00f0ff', a2: '#00f0ff', a4: '#ff9500',
+           ink1: '#eef0f2', ink2: '#b4bcc6', ink3: '#7d8691', pause: '#5d646d',
+           claude: '#D97757', gemini: '#5B8CFF', chatgpt: '#19C39C', odin: '#00f0ff', noyau: '#14171b', fondOrbe: '#08090a' },
 };
 const COUL = {}, COUL_VERDICT = {}, COUL_POLE = {}, COUL_ACTIVITE = {};
 /** Change de palette (les objets sont modifies sur place : les fonctions de dessin les relisent). */

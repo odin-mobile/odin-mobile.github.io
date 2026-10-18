@@ -5,7 +5,7 @@
      (marque d'un en-tete x-odin-cache: 1 pour que l'appli affiche « HORS LIGNE »).
    Rien d'autre n'est demande au reseau : aucune autre origine n'est jamais contactee.
    ══════════════════════════════════════════════════════════════ */
-const VERSION = 'odin-mobile-v4';   // v4 : mini-description des agents (v3 : themes, Competences)
+const VERSION = 'odin-mobile-v5';   // v5 : Tokyo facon Night City (v4 : descriptions, v3 : themes)
 const COQUILLE = ['./', 'index.html', 'app.css', 'app.js', 'theme.js', 'scenes.js', 'crypto-odin.js', 'chambre-poles.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/saira.woff2', 'fonts/orbitron.woff2', 'fonts/plex-mono-400.woff2', 'fonts/plex-mono-500.woff2', 'fonts/plex-mono-600.woff2'];

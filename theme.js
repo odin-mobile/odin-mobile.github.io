@@ -5,7 +5,7 @@
    app.js le change ensuite au toucher d'une pastille.
    ══════════════════════════════════════════════════════════════ */
 (function () {
-  var COULEUR_BARRE = { neon: '#090016', white: '#f5f7ff', tokyo: '#040008' };
+  var COULEUR_BARRE = { neon: '#090016', white: '#f5f7ff', tokyo: '#0b0c0e' };
   var t = null;
   try { t = localStorage.getItem('odin-mobile.theme'); } catch (e) { /* sans memoire : neon */ }
   if (!COULEUR_BARRE[t]) t = 'neon';
