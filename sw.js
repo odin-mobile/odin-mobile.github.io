@@ -5,8 +5,8 @@
      (marque d'un en-tete x-odin-cache: 1 pour que l'appli affiche « HORS LIGNE »).
    Rien d'autre n'est demande au reseau : aucune autre origine n'est jamais contactee.
    ══════════════════════════════════════════════════════════════ */
-const VERSION = 'odin-mobile-v2';   // v2 : adresse dediee odin-mobile.github.io
-const COQUILLE = ['./', 'index.html', 'app.css', 'app.js', 'scenes.js', 'crypto-odin.js', 'chambre-poles.js',
+const VERSION = 'odin-mobile-v3';   // v3 : themes (theme.js) et ecran Competences
+const COQUILLE = ['./', 'index.html', 'app.css', 'app.js', 'theme.js', 'scenes.js', 'crypto-odin.js', 'chambre-poles.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/saira.woff2', 'fonts/orbitron.woff2', 'fonts/plex-mono-400.woff2', 'fonts/plex-mono-500.woff2', 'fonts/plex-mono-600.woff2'];
 const ETAT = 'etat.chiffre.json';

@@ -7,12 +7,13 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#090016">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
 <title>ODIN Mobile</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="app.css">
+<script src="theme.js"></script>
 <script type="module" src="app.js"></script>
 </head>
 <body>
@@ -44,6 +45,11 @@
       </div>
     </div>
     <div class="etat-au">
+      <div class="themes" role="group" aria-label="Thème">
+        <button class="theme-btn" data-theme-id="neon" aria-pressed="false" aria-label="Thème Neon"><i></i></button>
+        <button class="theme-btn" data-theme-id="white" aria-pressed="false" aria-label="Thème clair (ODIN White)"><i></i></button>
+        <button class="theme-btn" data-theme-id="tokyo" aria-pressed="false" aria-label="Thème Dark Tokyo Cyberpunk"><i></i></button>
+      </div>
       <span id="etat-date" class="mono">—</span>
       <span id="badge-reseau" class="badge" hidden>HORS LIGNE</span>
     </div>
@@ -79,6 +85,7 @@
 
       <div class="plaque">
         <div class="plaque-tete"><span class="plaque-titre">Clés & abonnements</span><span id="depenses" class="compte mono"></span></div>
+        <p id="quotas-mesure" class="quotas-mesure mono" hidden></p>
         <div id="jauges" class="jauges"></div>
       </div>
     </section>
@@ -116,6 +123,20 @@
       </div>
     </section>
 
+    <!-- ═════ ÉCRAN 5 : COMPÉTENCES (2026-10-18) ═════ -->
+    <section id="vue-skills" class="vue" hidden aria-labelledby="t-skills">
+      <h2 id="t-skills" class="titre-ecran">COMPÉTENCES</h2>
+      <p id="sk-sous" class="sous-ecran mono"></p>
+      <input id="sk-cherche" class="cherche" type="search" placeholder="Chercher (nom, usage, IA…)" aria-label="Chercher une compétence" autocomplete="off" spellcheck="false">
+      <div class="filtres filtres-sk" role="group" aria-label="Filtrer par IA">
+        <button class="filtre actif" data-cible="toutes" aria-pressed="true">Toutes <b id="sk-n-toutes"></b></button>
+        <button class="filtre" data-cible="claude" aria-pressed="false">Claude <b id="sk-n-claude"></b></button>
+        <button class="filtre" data-cible="gemini" aria-pressed="false">Gemini <b id="sk-n-gemini"></b></button>
+        <button class="filtre" data-cible="both" aria-pressed="false">Les deux <b id="sk-n-both"></b></button>
+      </div>
+      <div id="sk-liste" class="liste-sk"></div>
+    </section>
+
     <!-- ═════ ÉCRAN 4 : SYNTHÈSE ═════ -->
     <section id="vue-synthese" class="vue" hidden aria-labelledby="t-synthese">
       <h2 id="t-synthese" class="titre-ecran">SYNTHÈSE</h2>
@@ -150,6 +171,7 @@
     <button class="nav-btn" data-vue="agents">AGENTS <span id="nav-nb" class="mono"></span></button>
     <button class="nav-btn" data-vue="nexus">NEXUS</button>
     <button class="nav-btn" data-vue="synthese">VAULT</button>
+    <button class="nav-btn" data-vue="skills">SKILLS</button>
   </nav>
 </div>
 

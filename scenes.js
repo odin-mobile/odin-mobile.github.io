@@ -21,21 +21,41 @@
 
 import { disposer, POLES_COURTS } from './chambre-poles.js';
 
-const COUL = {
-  beam: '#00f0ff', flag: '#ff2bd6', halt: '#ff1f4f', seal: '#9dff3c', a2: '#b026ff', a4: '#ffb300',
-  ink1: '#ddffff', ink2: '#d6c2ff', ink3: '#a58bdd', pause: '#6b7388',
-  claude: '#D97757', gemini: '#5B8CFF', chatgpt: '#19C39C',
+/* ── Les palettes des 3 themes (memes teintes que app.css ; maquette Argon pour Clair et Tokyo).
+      noyau = le milieu du coeur d'ODIN, fondOrbe = le bord sombre de chaque orbe. ── */
+const PALETTES = {
+  neon: { beam: '#00f0ff', flag: '#ff2bd6', halt: '#ff1f4f', seal: '#9dff3c', a2: '#b026ff', a4: '#ffb300',
+          ink1: '#ddffff', ink2: '#d6c2ff', ink3: '#a58bdd', pause: '#6b7388',
+          claude: '#D97757', gemini: '#5B8CFF', chatgpt: '#19C39C', odin: '#e8ffff', noyau: '#26084e', fondOrbe: '#0a0418' },
+  white: { beam: '#0284c7', flag: '#e11d48', halt: '#dc2626', seal: '#059669', a2: '#4f46e5', a4: '#d97706',
+           ink1: '#0f172a', ink2: '#334155', ink3: '#64748b', pause: '#94a3b8',
+           claude: '#ea580c', gemini: '#4f46e5', chatgpt: '#059669', odin: '#0f172a', noyau: '#bae6fd', fondOrbe: '#1e293b' },
+  tokyo: { beam: '#00f0ff', flag: '#ff007f', halt: '#ff3b30', seal: '#fcee0a', a2: '#ff007f', a4: '#ff9500',
+           ink1: '#fff0f8', ink2: '#f5b8d8', ink3: '#b98aa9', pause: '#8a7a90',
+           claude: '#D97757', gemini: '#5B8CFF', chatgpt: '#19C39C', odin: '#fcee0a', noyau: '#180226', fondOrbe: '#06000c' },
 };
-export const COUL_VERDICT = { SAIN: COUL.seal, ATTENTION: COUL.flag, ALERTE: COUL.halt, PAUSE: COUL.pause, VU: COUL.a4, INCONNU: COUL.ink3 };
-const COUL_POLE = { pilotage: COUL.beam, code: COUL.a2, vault: COUL.flag, pc: COUL.a4, autres: COUL.ink3 };
-const COUL_ACTIVITE = { 'En cours': COUL.beam, 'À lancer': COUL.flag, 'En pause': COUL.a4, 'En sommeil': COUL.ink3,
-                        'Bloqué': COUL.halt, 'Terminé': COUL.a2, Inconnu: COUL.ink3 };
+const COUL = {}, COUL_VERDICT = {}, COUL_POLE = {}, COUL_ACTIVITE = {};
+/** Change de palette (les objets sont modifies sur place : les fonctions de dessin les relisent). */
+function palette(nom) {
+  Object.assign(COUL, PALETTES[nom] || PALETTES.neon);
+  Object.assign(COUL_VERDICT, { SAIN: COUL.seal, ATTENTION: COUL.flag, ALERTE: COUL.halt, PAUSE: COUL.pause, VU: COUL.a4, INCONNU: COUL.ink3 });
+  Object.assign(COUL_POLE, { pilotage: COUL.beam, code: COUL.a2, vault: COUL.flag, pc: COUL.a4, autres: COUL.ink3 });
+  Object.assign(COUL_ACTIVITE, { 'En cours': COUL.beam, 'À lancer': COUL.flag, 'En pause': COUL.a4, 'En sommeil': COUL.ink3,
+                                 'Bloqué': COUL.halt, 'Terminé': COUL.a2, Inconnu: COUL.ink3 });
+  SPRITES.clear();
+}
+/** '#rrggbb' + opacite -> 'rgba(r,g,b,a)'. */
+function rgba(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`;
+}
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 const HERO = '"Orbitron", "Saira", sans-serif';
 const GRAVE = new Set(['ALERTE', 'ATTENTION']);
 
 /* ── Sprites : une orbe lumineuse pre-dessinee par couleur ── */
 const SPRITES = new Map();
+palette('neon');
 const S_TAILLE = 128, S_RAYON = S_TAILLE / 5.2;      // le halo s'etend a 2,6 rayons
 function sprite(col) {
   if (SPRITES.has(col)) return SPRITES.get(col);
@@ -46,7 +66,7 @@ function sprite(col) {
   halo.addColorStop(0, col + 'aa'); halo.addColorStop(0.4, col + '40'); halo.addColorStop(1, col + '00');
   g.fillStyle = halo; g.fillRect(0, 0, S_TAILLE, S_TAILLE);
   const boule = g.createRadialGradient(m - r * 0.35, m - r * 0.35, r * 0.08, m, m, r);
-  boule.addColorStop(0, '#ffffff'); boule.addColorStop(0.5, col); boule.addColorStop(1, '#0a0418');
+  boule.addColorStop(0, '#ffffff'); boule.addColorStop(0.5, col); boule.addColorStop(1, COUL.fondOrbe);
   g.beginPath(); g.arc(m, m, r, 0, Math.PI * 2); g.fillStyle = boule; g.fill();
   SPRITES.set(col, c);
   return c;
@@ -89,7 +109,7 @@ export function creerScenes(canvas, lecture, { ouvrirAgent }) {
     ctx.fillText(txt, x, y);
   }
   function etoiles() {
-    const lots = ['rgba(0,240,255,.55)', 'rgba(255,43,214,.45)', 'rgba(214,194,255,.4)'];
+    const lots = [rgba(COUL.beam, .55), rgba(COUL.flag, .45), rgba(COUL.ink2, .4)];
     for (let l = 0; l < 3; l++) {
       ctx.fillStyle = lots[l];
       ctx.beginPath();
@@ -114,11 +134,11 @@ export function creerScenes(canvas, lecture, { ouvrirAgent }) {
   function coeurOdin(p, rayon) {
     const r = rayon * p.k;
     const g = ctx.createRadialGradient(p.x - r * 0.25, p.y - r * 0.25, r * 0.1, p.x, p.y, r);
-    g.addColorStop(0, 'rgba(0,240,255,.42)'); g.addColorStop(0.55, 'rgba(38,8,78,.7)'); g.addColorStop(1, 'rgba(0,240,255,.85)');
+    g.addColorStop(0, rgba(COUL.beam, .42)); g.addColorStop(0.55, rgba(COUL.noyau, .7)); g.addColorStop(1, rgba(COUL.beam, .85));
     ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
     ctx.strokeStyle = COUL.beam; ctx.lineWidth = 1.6; ctx.stroke();
     ctx.textAlign = 'center';
-    etiquette('ODIN', p.x, p.y + Math.max(6, r * 0.2), '#e8ffff', Math.max(12, r * 0.5), HERO);
+    etiquette('ODIN', p.x, p.y + Math.max(6, r * 0.2), COUL.odin, Math.max(12, r * 0.5), HERO);
   }
 
   /* ═════════ 1. SPHÈRE ═════════ */
@@ -130,11 +150,11 @@ export function creerScenes(canvas, lecture, { ouvrirAgent }) {
         const a = (k / 60) * Math.PI * 2, p = proj(Math.cos(a) * rb, 118, Math.sin(a) * rb);
         k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y);
       }
-      ctx.strokeStyle = i % 2 ? 'rgba(255,43,214,.3)' : 'rgba(0,240,255,.32)'; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.strokeStyle = i % 2 ? rgba(COUL.flag, .3) : rgba(COUL.beam, .32); ctx.lineWidth = 1.2; ctx.stroke();
     });
-    anneau(118, 0.35, 'rgba(157,255,60,.55)', 1.6);
-    anneau(112, -0.45, 'rgba(0,240,255,.5)', 1.3);
-    anneau(170, 0.18, 'rgba(176,38,255,.32)', 1, [5, 5]);
+    anneau(118, 0.35, rgba(COUL.seal, .55), 1.6);
+    anneau(112, -0.45, rgba(COUL.beam, .5), 1.3);
+    anneau(170, 0.18, rgba(COUL.a2, .32), 1, [5, 5]);
     const centre = proj(0, 0, 0), file = [];
     file.push({ prof: centre.prof, dessin: () => coeurOdin(centre, 54) });
     const n = Math.max(1, agents.length);
@@ -145,7 +165,7 @@ export function creerScenes(canvas, lecture, { ouvrirAgent }) {
       ctx.moveTo(centre.x, centre.y); ctx.lineTo(p.x, p.y);
       return p;
     });
-    ctx.strokeStyle = 'rgba(0,240,255,.12)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = rgba(COUL.beam, .12); ctx.lineWidth = 1; ctx.stroke();
     agents.forEach((a, i) => {
       const p = pos[i], col = COUL_VERDICT[a.verdict] || COUL.ink3, f = (t * 0.5 + i * 0.13) % 1;
       ctx.fillStyle = col; ctx.fillRect(centre.x + (p.x - centre.x) * f - 1, centre.y + (p.y - centre.y) * f - 1, 2.4, 2.4);
@@ -204,7 +224,7 @@ export function creerScenes(canvas, lecture, { ouvrirAgent }) {
       const p1 = P(Math.cos(a) * (last.r + demi), last.h, Math.sin(a) * (last.r + demi));
       ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y);
     }
-    ctx.strokeStyle = 'rgba(0,240,255,.22)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = rgba(COUL.beam, .22); ctx.lineWidth = 1; ctx.stroke();
     /* ODIN au centre de la salle */
     const centre = P(0, 2.2, 0), file = [{ prof: centre.prof, dessin: () => coeurOdin(centre, 34) }];
     /* Faisceaux : seulement les agents a regarder, pulses selon la gravite */
@@ -246,8 +266,8 @@ export function creerScenes(canvas, lecture, { ouvrirAgent }) {
   /* ═════════ 3. TRIADE IA ═════════ */
   function triade() {
     const nx = etat.nexus, tot = cache.parts;
-    anneau(175, 0, 'rgba(0,240,255,.32)', 1.4);
-    anneau(150, 0.12, 'rgba(217,119,87,.25)', 1, [4, 4]);
+    anneau(175, 0, rgba(COUL.beam, .32), 1.4);
+    anneau(150, 0.12, rgba(COUL.claude, .25), 1, [4, 4]);
     const ias = [['claude', 'CLAUDE', COUL.claude, 0.18], ['gemini', 'GEMINI', COUL.gemini, 0.82], ['chatgpt', 'CHATGPT', COUL.chatgpt, 1.5]];
     const pts = ias.map(([id, nom, col, a0]) => {
       const a = Math.PI * a0 + t * 0.2, part = tot[id] || 0;
@@ -257,7 +277,7 @@ export function creerScenes(canvas, lecture, { ouvrirAgent }) {
     for (let i = 0; i < 3; i++) {
       const a = pts[i], b = pts[(i + 1) % 3];
       ctx.beginPath(); ctx.moveTo(a.p.x, a.p.y); ctx.lineTo(b.p.x, b.p.y);
-      ctx.strokeStyle = 'rgba(221,255,255,.2)'; ctx.lineWidth = 1.4; ctx.stroke();
+      ctx.strokeStyle = rgba(COUL.ink1, .2); ctx.lineWidth = 1.4; ctx.stroke();
       for (let k = 0; k < 3; k++) {
         const f = (t * 0.4 + k / 3 + i * 0.2) % 1;
         orbe({ x: a.p.x + (b.p.x - a.p.x) * f, y: a.p.y + (b.p.y - a.p.y) * f, k: 1 }, 2.6, a.col);
@@ -299,7 +319,7 @@ export function creerScenes(canvas, lecture, { ouvrirAgent }) {
       if (!pts[a] || !pts[b]) continue;
       ctx.moveTo(pts[a].p.x, pts[a].p.y); ctx.lineTo(pts[b].p.x, pts[b].p.y);
     }
-    ctx.strokeStyle = 'rgba(255,43,214,.26)'; ctx.lineWidth = 0.9; ctx.stroke();
+    ctx.strokeStyle = rgba(COUL.flag, .26); ctx.lineWidth = 0.9; ctx.stroke();
     const tries = pts.sort((x, y) => y.p.prof - x.p.prof);
     tries.forEach(o => { o.r = orbe(o.p, o.n.vivant ? 6.5 : 3.8, o.n.col); });
     ctx.textAlign = 'center';
@@ -413,5 +433,6 @@ export function creerScenes(canvas, lecture, { ouvrirAgent }) {
       dessiner(); relancer();
     },
     actif(oui) { actif = oui; oui ? (taille(), relancer()) : arreter(); },
+    theme(nom) { palette(nom); delete cache.galaxie; dessiner(); },
   };
 }

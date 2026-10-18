@@ -9,11 +9,13 @@
    ══════════════════════════════════════════════════════════════ */
 
 import { dechiffrer, PhraseIncorrecte } from './crypto-odin.js';
-import { creerScenes, COUL_VERDICT } from './scenes.js';
+import { creerScenes } from './scenes.js';
 import { POLES } from './chambre-poles.js';
 
 const CLE_PHRASE = 'odin-mobile.phrase';
 const CLE_VUE = 'odin-mobile.vue';
+const CLE_THEME = 'odin-mobile.theme';
+const VUES = ['command', 'agents', 'nexus', 'synthese', 'skills'];
 const ANCIEN_MS = 2 * 3600 * 1000;
 const $ = id => document.getElementById(id);
 
@@ -45,12 +47,13 @@ const libVerdict = v => LIB_VERDICT[v] || 'SANS ÉTAT';
 const verdictSur = v => (LIB_VERDICT[v] ? v : 'INCONNU');
 const LIB_RYTHME = { horaire: 'planifié', declenche: 'déclenché par le Métronome', sur_demande: 'sur demande' };
 const GRAVE = new Set(['ALERTE', 'ATTENTION']);
+const coulVerdict = v => `var(--v-${verdictSur(v).toLowerCase()})`;
 const IAS = [
-  { id: 'claude', nom: 'Claude', col: '#D97757', titre: 'Le cerveau',
+  { id: 'claude', nom: 'Claude', col: 'var(--ia-claude)', titre: 'Le cerveau',
     taches: 'Dialogue écrit et vocal · pilote l’app (écrans, statuts, musique, agents) · colonne Claude de l’Arène' },
-  { id: 'gemini', nom: 'Gemini', col: '#5B8CFF', titre: 'Le veilleur',
+  { id: 'gemini', nom: 'Gemini', col: 'var(--ia-gemini)', titre: 'Le veilleur',
     taches: 'Résumés des News · recherche Google dans l’Arène · remplaçant pendant les pauses (Relais, via l’abonnement AI Pro)' },
-  { id: 'chatgpt', nom: 'ChatGPT', col: '#19C39C', titre: 'Le second avis',
+  { id: 'chatgpt', nom: 'ChatGPT', col: 'var(--ia-chatgpt)', titre: 'Le second avis',
     taches: 'Deuxième avis sur les réponses du cerveau · briefing du matin (Héraut) · voix d’ODIN (Onyx)' },
 ];
 const ORDRE_ACTIVITE = ['En cours', 'À lancer', 'Bloqué', 'En pause', 'En sommeil', 'Terminé', 'Inconnu'];
@@ -75,6 +78,7 @@ function depuis(iso) {
 /* ═════════ Etat de l'appli ═════════ */
 let E = null;                        // l'etat dechiffre
 let filtre = 'tous';
+let cibleSk = 'toutes', chercheSk = '';
 let scenes = null;
 
 /* ═════════ Chargement ═════════ */
@@ -123,9 +127,10 @@ function afficher(depuisCache) {
   const b = $('bandeau-ancien');
   b.hidden = !(age > ANCIEN_MS);
   b.textContent = `État ancien : ODIN n’a rien publié de nouveau depuis ${depuis(E.genere).replace('il y a ', '')}. Le PC est peut-être éteint.`;
-  rendreCommand(); rendreAgents(); rendreNexus(); rendreSynthese();
+  rendreCommand(); rendreAgents(); rendreNexus(); rendreSynthese(); rendreSkills();
   if (!scenes) {
     scenes = creerScenes($('scene'), $('scene-lecture'), { ouvrirAgent: ouvrirFiche });
+    scenes.theme(document.documentElement.dataset.theme);
   }
   scenes.charger(E, { sig, libVerdict });
   allerA(memoire.lire(CLE_VUE) || 'command', false);
@@ -170,6 +175,11 @@ function rendreCommand() {
   }) : [el('p', 'vide', 'Rien à traiter : tous les agents sont sains ou déjà vus.')]));
 
   $('depenses').textContent = br.depenses_api_mois ? `API ce mois : ${br.depenses_api_mois}` : '';
+  // Les jauges datent de la derniere ronde du Gardien des Quotas (toutes les 3 h) : on dit de quand.
+  const mq = $('quotas-mesure'), ageQ = Date.now() - new Date(br.quotas_mesure);
+  mq.hidden = !br.quotas_mesure || isNaN(ageQ);
+  mq.textContent = `Mesuré ${depuis(br.quotas_mesure)}${ageQ > 3600 * 1000 ? ' · peut avoir changé depuis' : ''}`;
+  mq.classList.toggle('ancien', ageQ > 3600 * 1000);
   $('jauges').replaceChildren(...br.jauges.map(jauge));
 }
 
@@ -180,7 +190,7 @@ function dateFr(iso) {
 
 function jauge(j) {
   const NS = 'http://www.w3.org/2000/svg';
-  const col = { ok: '#00f0ff', info: '#ffb300', attention: '#ff2bd6', alerte: '#ff1f4f' }[j.niveau] || '#00f0ff';
+  const col = { ok: 'var(--c-beam)', info: 'var(--c-a4)', attention: 'var(--c-flag)', alerte: 'var(--c-halt)' }[j.niveau] || 'var(--c-beam)';
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 42 42'); svg.setAttribute('class', 'anneau'); svg.setAttribute('aria-hidden', 'true');
   const cercle = (cls, dash) => {
@@ -189,7 +199,7 @@ function jauge(j) {
     c.setAttribute('fill', 'none'); c.setAttribute('stroke-width', '3.5');
     if (cls) c.setAttribute('class', cls);
     if (dash != null) {
-      c.setAttribute('stroke', col); c.setAttribute('stroke-linecap', 'round');
+      c.style.stroke = col; c.setAttribute('stroke-linecap', 'round');
       c.setAttribute('stroke-dasharray', `${(dash * 106.8 / 100).toFixed(1)} 106.8`);
       c.setAttribute('transform', 'rotate(-90 21 21)');
     }
@@ -211,8 +221,8 @@ function carteAgent(a) {
   const v = verdictSur(a.verdict);
   const btn = el('button', `carte-agent${GRAVE.has(v) ? ' grave' : ''}${v === 'PAUSE' ? ' pause' : ''}`);
   const g = el('div', 'glyphe', sig(a));
-  g.style.color = COUL_VERDICT[v];
-  g.style.borderColor = COUL_VERDICT[v];
+  g.style.color = coulVerdict(v);
+  g.style.borderColor = coulVerdict(v);
   const corps = el('div', 'ca-corps');
   const ligne = el('div', 'ca-ligne');
   const nom = el('span', 'ca-nom', a.nom);
@@ -235,9 +245,9 @@ function rendreAgents() {
   const vus = tous.filter(a => filtre === 'tous' || (filtre === 'traiter' && GRAVE.has(a.verdict))
     || (filtre === 'ia' && a.ia) || (filtre === 'sans' && !a.ia));
   const groupes = [
-    ['À traiter', '#ff2bd6', vus.filter(a => GRAVE.has(a.verdict))],
-    ['En service', '#9dff3c', vus.filter(a => !GRAVE.has(a.verdict) && a.verdict !== 'PAUSE')],
-    ['En pause', '#8a93a8', vus.filter(a => a.verdict === 'PAUSE')],
+    ['À traiter', 'var(--c-flag)', vus.filter(a => GRAVE.has(a.verdict))],
+    ['En service', 'var(--c-seal)', vus.filter(a => !GRAVE.has(a.verdict) && a.verdict !== 'PAUSE')],
+    ['En pause', 'var(--v-pause)', vus.filter(a => a.verdict === 'PAUSE')],
   ].filter(g => g[2].length);
   $('groupes-agents').replaceChildren(...groupes.flatMap(([titre, col, liste]) => {
     const t = el('div', 'groupe-titre', titre);
@@ -287,12 +297,13 @@ function rendreNexus() {
   }));
   $('nx-modeles').replaceChildren(...IAS.map(i => {
     const d = el('div', 'modele');
-    d.style.borderColor = i.col + '88';
+    d.style.borderColor = `color-mix(in srgb, ${i.col} 55%, transparent)`;
     const tete = el('div', 'modele-tete');
     const n = el('span', null, `${i.nom.toUpperCase()} · ${nx.modeles[i.id] || '—'}`);
     n.style.color = i.col;
-    tete.append(n, el('span', null, `${totalTout ? Math.round(100 * (nx.totaux[i.id] || 0) / totalTout) : 0} %`));
-    d.append(tete, el('div', 'modele-sous', `${nombre(nx.totaux[i.id])} jetons cumulés · IA connectée`));
+    // Meme base que la legende et la Triade (30 jours) : un seul pourcentage par IA sur l'ecran.
+    tete.append(n, el('span', null, `${Math.round(100 * somme30(i.id) / total30)} % · 30 j`));
+    d.append(tete, el('div', 'modele-sous', `${nombre(nx.totaux[i.id])} jetons cumulés depuis le début · IA connectée`));
     return d;
   }));
   $('nx-roles').replaceChildren(...IAS.map(i => {
@@ -346,13 +357,68 @@ function rendreSynthese() {
   }));
 }
 
+/* ═════════ Competences (fiches AI/Competences, lecture seule) ═════════ */
+const LIB_CIBLE = { claude: 'CLAUDE', gemini: 'GEMINI', both: 'LES DEUX', other: 'AUTRE' };
+// La pastille d'etat suit l'emoji de la fiche ; son texte = le debut du statut, sans date ni precision.
+const CLASSE_STATUT = { '🟢': 'st-ok', '🟡': 'st-test', '⏸': 'st-pause', '⛔': 'st-stop', '🔵': 'st-info' };
+const sansAccents = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+function statutCourt(s) {
+  const m = /^(\p{Extended_Pictographic})\uFE0F?\s*(.*)$/u.exec(String(s || '').trim());
+  const emoji = m ? m[1] : '', reste = m ? m[2] : String(s || '');
+  const tete = reste.split(/\s+[—–-]\s+/)[0].replace(/\s*\([^)]*\)/g, '').trim();
+  return { cls: CLASSE_STATUT[emoji] || 'st-autre', texte: tete || 'Sans statut' };
+}
+
+// « Claude » montre aussi les competences faites pour les deux IA (idem pour « Gemini »).
+const garderCible = c => cibleSk === 'toutes' || c.cible === cibleSk || (cibleSk !== 'both' && c.cible === 'both');
+
+function carteSkill(c) {
+  const d = el('details', 'sk');
+  const tete = el('summary', 'sk-tete');
+  const st = statutCourt(c.statut);
+  const cible = LIB_CIBLE[c.cible] ? c.cible : 'other';
+  const pastilles = el('div', 'sk-pastilles');
+  pastilles.append(el('span', `pastille ia-${cible}`, LIB_CIBLE[cible]), el('span', `pastille ${st.cls}`, st.texte));
+  // Le vrai nom (celui qui lance la competence) en tete ; le titre lisible dessous.
+  tete.append(el('div', 'sk-nom', c.id), el('div', 'sk-titre', c.nom), pastilles);
+  const corps = el('div', 'sk-corps');
+  corps.append(c.resume ? el('p', 'sk-resume', c.resume) : el('p', 'sk-resume vide', 'Pas de résumé « En une ligne » dans la fiche.'));
+  const infos = el('dl', 'sk-infos');
+  for (const [lib, val] of [['IA', c.ia], ['Où elle vit', c.ou], ['Statut', c.statut]]) {
+    infos.append(el('dt', null, lib), el('dd', null, val || '—'));
+  }
+  corps.append(infos);
+  d.append(tete, corps);
+  return d;
+}
+
+function rendreSkills() {
+  const tout = E.competences || [];
+  const n = k => tout.filter(c => c.cible === k).length;
+  $('sk-sous').textContent = tout.length
+    ? `${tout.length} compétences · ${n('claude')} Claude · ${n('gemini')} Gemini · ${n('both')} les deux`
+    : 'Fiches du dossier AI/Compétences';
+  $('sk-n-toutes').textContent = tout.length;
+  $('sk-n-claude').textContent = n('claude') + n('both');
+  $('sk-n-gemini').textContent = n('gemini') + n('both');
+  $('sk-n-both').textContent = n('both');
+  const q = sansAccents(chercheSk.trim());
+  const vus = tout.filter(c => garderCible(c)
+    && (!q || sansAccents(`${c.id} ${c.nom} ${c.resume} ${c.ia} ${c.ou} ${c.statut}`).includes(q)));
+  $('sk-liste').replaceChildren(...(vus.length ? vus.map(carteSkill)
+    : [el('p', 'vide', !tout.length
+      ? 'Les compétences arrivent avec la prochaine publication d’ODIN (toutes les 30 minutes).'
+      : 'Aucune compétence ne correspond.')]));
+}
+
 /* ═════════ Fiche agent ═════════ */
 function ouvrirFiche(id) {
   const a = E?.agents.find(x => x.id === id);
   if (!a) return;
   const v = verdictSur(a.verdict);
   const g = $('fi-sig');
-  g.textContent = sig(a); g.style.color = COUL_VERDICT[v]; g.style.borderColor = COUL_VERDICT[v];
+  g.textContent = sig(a); g.style.color = coulVerdict(v); g.style.borderColor = coulVerdict(v);
   $('fi-nom').textContent = a.nom;
   $('fi-sous').textContent = `AGENT N°${a.numero} · ${libVerdict(v)} · LECTURE SEULE`;
   $('fi-ronde').textContent = a.ronde ? dateCourte(a.ronde) : 'jamais';
@@ -370,8 +436,8 @@ $('fiche').addEventListener('click', e => { if (e.target === e.currentTarget) e.
 
 /* ═════════ Navigation (locale) ═════════ */
 function allerA(vue, defiler = true) {
-  if (!['command', 'agents', 'nexus', 'synthese'].includes(vue)) vue = 'command';
-  for (const v of ['command', 'agents', 'nexus', 'synthese']) $(`vue-${v}`).hidden = v !== vue;
+  if (!VUES.includes(vue)) vue = 'command';
+  for (const v of VUES) $(`vue-${v}`).hidden = v !== vue;
   document.querySelectorAll('.nav-btn').forEach(b => {
     const oui = b.dataset.vue === vue;
     b.classList.toggle('actif', oui);
@@ -382,9 +448,9 @@ function allerA(vue, defiler = true) {
   if (defiler) window.scrollTo(0, 0);
 }
 document.querySelectorAll('.nav-btn').forEach(b => b.addEventListener('click', () => allerA(b.dataset.vue)));
-document.querySelectorAll('.filtre').forEach(b => b.addEventListener('click', () => {
+document.querySelectorAll('.filtre[data-filtre]').forEach(b => b.addEventListener('click', () => {
   filtre = b.dataset.filtre;
-  document.querySelectorAll('.filtre').forEach(x => {
+  document.querySelectorAll('.filtre[data-filtre]').forEach(x => {
     x.classList.toggle('actif', x === b); x.setAttribute('aria-pressed', String(x === b));
   });
   rendreAgents();
@@ -394,6 +460,30 @@ document.querySelectorAll('.onglet').forEach(b => b.addEventListener('click', ()
     x.classList.toggle('actif', x === b); x.setAttribute('aria-selected', String(x === b));
   });
   scenes?.mode(b.dataset.scene);
+}));
+
+document.querySelectorAll('.filtre[data-cible]').forEach(b => b.addEventListener('click', () => {
+  cibleSk = b.dataset.cible;
+  document.querySelectorAll('.filtre[data-cible]').forEach(x => {
+    x.classList.toggle('actif', x === b); x.setAttribute('aria-pressed', String(x === b));
+  });
+  if (E) rendreSkills();
+}));
+$('sk-cherche').addEventListener('input', e => { chercheSk = e.target.value; if (E) rendreSkills(); });
+
+/* ═════════ Theme (propre a ce telephone ; theme.js l'a deja pose au chargement) ═════════ */
+const THEMES = { neon: '#090016', white: '#f5f7ff', tokyo: '#040008' };   // couleur de la barre du systeme
+function appliquerTheme(id) {
+  if (!THEMES[id]) id = 'neon';
+  document.documentElement.dataset.theme = id;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEMES[id]);
+  document.querySelectorAll('.theme-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeId === id)));
+  scenes?.theme(id);
+  return id;
+}
+appliquerTheme(document.documentElement.dataset.theme);
+document.querySelectorAll('.theme-btn').forEach(b => b.addEventListener('click', () => {
+  memoire.ecrire(CLE_THEME, appliquerTheme(b.dataset.themeId));
 }));
 
 /* ═════════ Verrou et « Oublier la phrase » ═════════ */
