@@ -32,3 +32,21 @@ Polices : Saira, Orbitron, IBM Plex Mono — SIL Open Font License 1.1 (voir `fo
 
 1. En bas de l'écran Vault, appuyer sur le bouton « Oublier la phrase ».
 2. La phrase sera redemandée la prochaine fois.
+
+## Compétences et thèmes (2026-10-18)
+
+### 1. Compétences
+
+1. L'onglet SKILLS (le 5e de la barre du bas) liste les fiches du dossier AI/Compétences du vault.
+2. Chaque ligne montre le vrai nom de la compétence, avec ses tirets (c'est celui qui sert à la lancer), puis son titre lisible dessous, une pastille de l'IA (Claude, Gemini, Les deux) et une pastille de statut.
+3. Toucher une ligne la déplie : résumé, IA, où elle vit, statut complet.
+4. Les filtres sont Toutes / Claude / Gemini / Les deux. Claude et Gemini incluent aussi les compétences faites pour les deux.
+5. La recherche marche par nom, usage ou IA, sans tenir compte des accents.
+6. Les données arrivent avec l'état chiffré, mises à jour toutes les 30 minutes.
+
+### 2. Thèmes
+
+1. Trois pastilles se trouvent en haut à droite de l'écran.
+2. Neon est le thème par défaut ; Clair correspond à ODIN White ; Tokyo correspond à Dark Tokyo Cyberpunk.
+3. Le choix est gardé sur ce téléphone.
+4. Les scènes 3D suivent le thème.
