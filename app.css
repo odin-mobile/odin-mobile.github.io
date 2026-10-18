@@ -298,6 +298,7 @@ button { font: inherit; color: inherit; }
 .ca-ligne { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .ca-nom { font-size: 16px; font-weight: 600; color: var(--ink-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .puce-ia { font-family: var(--ff-mono); font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 999px; border: 1px solid rgba(var(--rgb-beam), .55); color: var(--c-beam); margin-left: 6px; vertical-align: 2px; }
+.ca-desc { font-size: 13px; color: var(--ink-1); opacity: .9; margin-top: 3px; line-height: 1.35; }
 .ca-info { font-family: var(--ff-mono); font-size: 12px; color: var(--ink-2); margin-top: 3px; }
 .ca-alerte { font-size: 13px; color: var(--c-flag-hi); margin-top: 4px; }
 
@@ -313,6 +314,7 @@ button { font: inherit; color: inherit; }
 .fiche-noms { flex: 1; min-width: 0; }
 .fiche-nom { font-size: 21px; font-weight: 700; }
 .fiche-sous { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+.fiche-desc { margin-top: 12px; padding: 9px 12px; font-size: 15px; color: var(--ink-1); border-left: 2px solid var(--c-beam); background: var(--plate-well); border-radius: 0 8px 8px 0; }
 .fermer { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--edge); background: var(--plate-well); cursor: pointer; font-size: 18px; }
 .tuiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .fiche-tuiles { margin: 14px 0; }

@@ -228,7 +228,9 @@ function carteAgent(a) {
   const nom = el('span', 'ca-nom', a.nom);
   if (a.ia) nom.append(el('span', 'puce-ia', 'IA'));
   ligne.append(nom, el('span', `pastille v-${v}`, libVerdict(v)));
-  corps.append(ligne, el('div', 'ca-info', `n°${a.numero} · ${POLES[a.pole] || POLES.autres} · ${LIB_RYTHME[a.rythme] || a.rythme}`),
+  corps.append(ligne);
+  if (a.desc) corps.append(el('div', 'ca-desc', a.desc));   // mini-phrase, venue de l'etat chiffre
+  corps.append(el('div', 'ca-info', `n°${a.numero} · ${POLES[a.pole] || POLES.autres} · ${LIB_RYTHME[a.rythme] || a.rythme}`),
     el('div', 'ca-info', `ronde ${depuis(a.ronde)}`));
   if (GRAVE.has(v) && a.alertes[0]) corps.append(el('div', 'ca-alerte', a.alertes[0]));
   btn.append(g, corps);
@@ -421,6 +423,8 @@ function ouvrirFiche(id) {
   g.textContent = sig(a); g.style.color = coulVerdict(v); g.style.borderColor = coulVerdict(v);
   $('fi-nom').textContent = a.nom;
   $('fi-sous').textContent = `AGENT N°${a.numero} · ${libVerdict(v)} · LECTURE SEULE`;
+  $('fi-desc').textContent = a.desc || '';
+  $('fi-desc').hidden = !a.desc;
   $('fi-ronde').textContent = a.ronde ? dateCourte(a.ronde) : 'jamais';
   $('fi-rythme').textContent = LIB_RYTHME[a.rythme] || a.rythme;
   $('fi-moteur').textContent = a.ia ? 'avec IA' : 'code seul, sans IA';
