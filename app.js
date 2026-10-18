@@ -39,13 +39,17 @@ const SIG = {
   sentinelle: 'SO', archiviste: 'AR', gardien: 'GC', concierge: 'CP', guetteur: 'GS', veilleur: 'VP',
   heraut: 'HÉ', relais: 'RG', metronome: 'MÉ', vigie: 'VA', quotas: 'GQ', trieur: 'TO', analyste: 'AC',
   passeur: 'PD', cenacle: 'CÉ', eclaireur: 'ÉE', banc: 'BE', relecteur: 'RE', scribe: 'SC',
-  diagnostiqueur: 'DI', chroniqueur: 'CH', plume: 'PL', passerelle: 'PM',
+  diagnostiqueur: 'DI', chroniqueur: 'CH', plume: 'PL', passerelle: 'PM', 'agent-office': 'AO',
 };
 const sig = a => SIG[a.id] || String(a.nom || '?').slice(0, 2).toUpperCase();
 const LIB_VERDICT = { SAIN: 'SAIN', ATTENTION: 'ATTENTION', ALERTE: 'ALERTE', PAUSE: 'EN PAUSE', VU: 'VU', INCONNU: 'SANS ÉTAT' };
 const libVerdict = v => LIB_VERDICT[v] || 'SANS ÉTAT';
 const verdictSur = v => (LIB_VERDICT[v] ? v : 'INCONNU');
-const LIB_RYTHME = { horaire: 'planifié', declenche: 'déclenché par le Métronome', sur_demande: 'sur demande' };
+const LIB_RYTHME = { horaire: 'planifié', declenche: 'déclenché par le Métronome', sur_demande: 'sur demande', direct: 'en direct' };
+/* Agent Office (numero 0) : le pont Claude Code, pas un « Agent N » ; pas de ronde, allume ou eteint. */
+const estPont = a => a.numero === 0;
+const libNumero = a => (estPont(a) ? 'pont' : `n°${a.numero}`);
+const libPont = a => (a.verdict === 'PAUSE' ? 'éteint sur le PC · s’ouvre à la demande' : 'allumé sur le PC');
 const GRAVE = new Set(['ALERTE', 'ATTENTION']);
 const coulVerdict = v => `var(--v-${verdictSur(v).toLowerCase()})`;
 const IAS = [
@@ -230,8 +234,8 @@ function carteAgent(a) {
   ligne.append(nom, el('span', `pastille v-${v}`, libVerdict(v)));
   corps.append(ligne);
   if (a.desc) corps.append(el('div', 'ca-desc', a.desc));   // mini-phrase, venue de l'etat chiffre
-  corps.append(el('div', 'ca-info', `n°${a.numero} · ${POLES[a.pole] || POLES.autres} · ${LIB_RYTHME[a.rythme] || a.rythme}`),
-    el('div', 'ca-info', `ronde ${depuis(a.ronde)}`));
+  corps.append(el('div', 'ca-info', `${libNumero(a)} · ${POLES[a.pole] || POLES.autres} · ${LIB_RYTHME[a.rythme] || a.rythme}`),
+    el('div', 'ca-info', estPont(a) ? libPont(a) : `ronde ${depuis(a.ronde)}`));
   if (GRAVE.has(v) && a.alertes[0]) corps.append(el('div', 'ca-alerte', a.alertes[0]));
   btn.append(g, corps);
   btn.addEventListener('click', () => ouvrirFiche(a.id));
@@ -422,10 +426,10 @@ function ouvrirFiche(id) {
   const g = $('fi-sig');
   g.textContent = sig(a); g.style.color = coulVerdict(v); g.style.borderColor = coulVerdict(v);
   $('fi-nom').textContent = a.nom;
-  $('fi-sous').textContent = `AGENT N°${a.numero} · ${libVerdict(v)} · LECTURE SEULE`;
+  $('fi-sous').textContent = `${estPont(a) ? 'PONT CLAUDE CODE' : `AGENT N°${a.numero}`} · ${libVerdict(v)} · LECTURE SEULE`;
   $('fi-desc').textContent = a.desc || '';
   $('fi-desc').hidden = !a.desc;
-  $('fi-ronde').textContent = a.ronde ? dateCourte(a.ronde) : 'jamais';
+  $('fi-ronde').textContent = estPont(a) ? libPont(a) : a.ronde ? dateCourte(a.ronde) : 'jamais';
   $('fi-rythme').textContent = LIB_RYTHME[a.rythme] || a.rythme;
   $('fi-moteur').textContent = a.ia ? 'avec IA' : 'code seul, sans IA';
   $('fi-moteur').className = `t-val ${a.ia ? 'cyan' : ''}`;
