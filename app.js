@@ -39,7 +39,7 @@ const SIG = {
   sentinelle: 'SO', archiviste: 'AR', gardien: 'GC', concierge: 'CP', guetteur: 'GS', veilleur: 'VP',
   heraut: 'HÉ', relais: 'RG', metronome: 'MÉ', vigie: 'VA', quotas: 'GQ', trieur: 'TO', analyste: 'AC',
   passeur: 'PD', cenacle: 'CÉ', eclaireur: 'ÉE', banc: 'BE', relecteur: 'RE', scribe: 'SC',
-  diagnostiqueur: 'DI', chroniqueur: 'CH', plume: 'PL', passerelle: 'PM', 'agent-office': 'AO',
+  diagnostiqueur: 'DI', chroniqueur: 'CH', plume: 'PL', passerelle: 'PM', relaischatgpt: 'RC', 'agent-office': 'AO',
 };
 const sig = a => SIG[a.id] || String(a.nom || '?').slice(0, 2).toUpperCase();
 const LIB_VERDICT = { SAIN: 'SAIN', ATTENTION: 'ATTENTION', ALERTE: 'ALERTE', PAUSE: 'EN PAUSE', VU: 'VU', INCONNU: 'SANS ÉTAT' };
