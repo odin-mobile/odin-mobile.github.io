@@ -1,8 +1,8 @@
 /* ══════════════════════════════════════════════════════════════
-   ODIN MOBILE — l'appli (lecture, plus une seule action : lancer une ronde)
+   ODIN MOBILE — l'appli (lecture, plus deux actions a distance)
 
    Lecture : etat.chiffre.json, sur ce meme site. Unique ecriture (2026-10-26) : un ordre
-   chiffre « lancer la ronde » depose dans la boite du PC (ordre-odin.js).
+   chiffre depose dans la boite du PC (ordre-odin.js) : lancer une ronde, cocher une tache.
    La phrase secrete est demandee une fois et gardee sur ce telephone.
    Tout texte venant de l'etat passe par textContent : jamais d'HTML.
    Les autres boutons changent ce qu'on REGARDE (ecran, filtre, scene)
@@ -10,13 +10,16 @@
    ══════════════════════════════════════════════════════════════ */
 
 import { dechiffrer, PhraseIncorrecte } from './crypto-odin.js';
-import { envoyerRonde } from './ordre-odin.js';
+import { envoyerOrdre, envoyerRonde, numero } from './ordre-odin.js';
 import { creerScenes } from './scenes.js';
 import { POLES } from './chambre-poles.js';
 
 const CLE_PHRASE = 'odin-mobile.phrase';
 const CLE_VUE = 'odin-mobile.vue';
 const CLE_THEME = 'odin-mobile.theme';
+const CLE_ATTENTE = 'odin-mobile.cases-attente';   // cases cochees ici, pas encore appliquees par le PC
+const CLE_FAITES = 'odin-mobile.cases-faites';     // cases cochees ici et appliquees (7 jours, pour annuler)
+const CASE_GARDE_MS = 7 * 24 * 3600 * 1000;
 const VUES = ['command', 'agents', 'nexus', 'synthese', 'skills'];
 const ANCIEN_MS = 2 * 3600 * 1000;
 const $ = id => document.getElementById(id);
@@ -133,7 +136,9 @@ function afficher(depuisCache) {
   const b = $('bandeau-ancien');
   b.hidden = !(age > ANCIEN_MS);
   b.textContent = `État ancien : ODIN n’a rien publié de nouveau depuis ${depuis(E.genere).replace('il y a ', '')}. Le PC est peut-être éteint.`;
+  resoudreCases();
   rendreCommand(); rendreAgents(); rendreNexus(); rendreSynthese(); rendreSkills();
+  renvoyerCases();
   if (!scenes) {
     scenes = creerScenes($('scene'), $('scene-lecture'), { ouvrirAgent: ouvrirFiche });
     scenes.theme(document.documentElement.dataset.theme);
@@ -346,11 +351,7 @@ function rendreSynthese() {
     return l;
   }));
   $('sy-nbcases').textContent = `${s.cases.length} sur ${s.cases_total}`;
-  $('sy-cases').replaceChildren(...(s.cases.length ? s.cases.map(c => {
-    const li = el('li', null, c.texte);
-    li.append(el('span', 'cs-proj', `${c.projet} · ${dateFr(c.jour)}`));
-    return li;
-  }) : [el('li', null, 'Aucune case ouverte.')]));
+  rendreCases();
   const n = E.briefing.news;
   $('sy-news-date').textContent = dateFr(n.date);
   $('sy-news-titre').textContent = n.titre || 'Pas de Daily News récente';
@@ -419,6 +420,114 @@ function rendreSkills() {
       ? 'Les compétences arrivent avec la prochaine publication d’ODIN (toutes les 30 minutes).'
       : 'Aucune compétence ne correspond.')]));
 }
+
+/* ═════════ Cases a cocher depuis le telephone (2026-10-26) ═════════
+   Cocher = un ordre chiffre « case » dans la boite du PC. La case reste « en attente du PC »
+   (et l'ordre est renvoye a chaque ouverture, ntfy ne gardant un message que 12 h) jusqu'a ce
+   qu'un etat publie APRES l'ordre montre la case cochee (elle quitte la liste des cases ouvertes). */
+const liste = k => { try { const v = JSON.parse(memoire.lire(k) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; } };
+const garder = (k, v) => memoire.ecrire(k, JSON.stringify(v));
+
+function resoudreCases() {
+  if (!E?.synthese) return;
+  const ouvertes = new Set(E.synthese.cases.map(c => c.ref));
+  const publie = Date.parse(E.genere), maintenant = Date.now();
+  let attente = liste(CLE_ATTENTE), faites = liste(CLE_FAITES);
+  const reste = [];
+  for (const a of attente) {
+    const applique = publie > Date.parse(a.emis) && (a.fait ? !ouvertes.has(a.ref) : ouvertes.has(a.ref));
+    if (applique) {
+      faites = faites.filter(f => f.ref !== a.ref);
+      if (a.fait) faites.push({ ref: a.ref, texte: a.texte, projet: a.projet, quand: E.genere });
+    } else if (maintenant - Date.parse(a.emis) < CASE_GARDE_MS) reste.push(a);
+  }
+  garder(CLE_ATTENTE, reste);
+  garder(CLE_FAITES, faites.filter(f => maintenant - Date.parse(f.quand) < CASE_GARDE_MS && !ouvertes.has(f.ref)));
+}
+
+let renvoiFait = false;
+async function renvoyerCases() {
+  // Une fois par ouverture : les ordres en attente repartent (meme numero, le PC n'applique qu'une fois).
+  const phrase = memoire.lire(CLE_PHRASE);
+  if (renvoiFait || !phrase || !E?.boite || !navigator.onLine) return;
+  renvoiFait = true;
+  for (const a of liste(CLE_ATTENTE)) {
+    try { await envoyerOrdre(E.boite, { ordre: 'case', ref: a.ref, fait: a.fait, id: a.id, emis: a.emis }, phrase); }
+    catch { /* reessai a la prochaine ouverture */ }
+  }
+}
+
+async function basculerCase(c, fait) {
+  const phrase = memoire.lire(CLE_PHRASE);
+  if (!phrase || !E?.boite) return;
+  let attente = liste(CLE_ATTENTE);
+  const avant = attente.find(a => a.ref === c.ref);
+  attente = attente.filter(a => a.ref !== c.ref);
+  // Numero et date fixes des maintenant : un renvoi reste le MEME ordre pour le PC.
+  const o = { ordre: 'case', ref: c.ref, fait, id: numero(), emis: new Date().toISOString() };
+  try {
+    await envoyerOrdre(E.boite, o, phrase);
+  } catch {
+    renvoiFait = false;          // pas de reseau : l'ordre attend ici et repartira
+  }
+  // Annuler avant que le PC ait applique : il suffit d'oublier l'attente (l'ordre « decocher »
+  // part quand meme, au cas ou le premier aurait deja ete lu).
+  if (!(avant && avant.fait && !fait)) {
+    attente.push({ ref: c.ref, fait, texte: c.texte, projet: c.projet, id: o.id, emis: o.emis });
+  }
+  if (!fait) garder(CLE_FAITES, liste(CLE_FAITES).filter(f => f.ref !== c.ref));
+  garder(CLE_ATTENTE, attente);
+  rendreCases();
+}
+
+function ligneCase(c, coche, note, fait) {
+  const li = el('li', `case${coche ? ' coche' : ''}${note ? ' attente' : ''}`);
+  const b = el('button', 'case-btn');
+  b.type = 'button';
+  b.setAttribute('aria-pressed', String(coche));
+  b.append(el('span', 'case-boite', coche ? '☑' : '☐'), el('span', 'case-texte', c.texte));
+  b.addEventListener('click', () => basculerCase(c, fait));
+  li.append(b, el('span', 'cs-proj', note || `${c.projet}${c.jour ? ` · ${dateFr(c.jour)}` : ''}`));
+  return li;
+}
+
+function rendreCases() {
+  const s = E.synthese, attente = liste(CLE_ATTENTE), faites = liste(CLE_FAITES);
+  const enAttente = ref => attente.find(a => a.ref === ref);
+  const peut = !!E.boite;
+  const lignes = s.cases.map(c => {
+    const a = enAttente(c.ref);
+    if (!peut) { const li = el('li', 'case', c.texte); li.append(el('span', 'cs-proj', `${c.projet} · ${dateFr(c.jour)}`)); return li; }
+    return a?.fait ? ligneCase(c, true, 'Cochée ici · en attente du PC', false) : ligneCase(c, false, '', true);
+  });
+  $('sy-cases').replaceChildren(...(lignes.length ? lignes : [el('li', null, 'Aucune case ouverte.')]));
+  // Cochees depuis ce telephone : deja appliquees (annulables 7 jours) ou decochage en attente.
+  const recentes = [
+    ...faites.filter(f => !enAttente(f.ref)).map(f => ligneCase(f, true, `Cochée depuis le téléphone · ${f.projet}`, false)),
+    ...attente.filter(a => !a.fait && !s.cases.some(c => c.ref === a.ref))
+      .map(a => ligneCase(a, false, 'Décochée ici · en attente du PC', true)),
+  ];
+  $('sy-faites').replaceChildren(...recentes);
+  $('sy-faites-bloc').hidden = !recentes.length;
+}
+
+/* ═════════ Actualiser : recharger tout de suite, et demander au PC un etat frais ═════════ */
+$('actualiser').addEventListener('click', async () => {
+  const b = $('actualiser');
+  if (b.disabled) return;
+  b.disabled = true;
+  b.classList.add('tourne');
+  await rafraichir();
+  const phrase = memoire.lire(CLE_PHRASE);
+  const p = E?.agents.find(a => a.id === 'passerelle');
+  let demande = false;
+  if (phrase && E?.boite && p?.lancable) {
+    try { await envoyerRonde(E.boite, 'passerelle', phrase); demande = true; } catch { /* hors ligne : on garde l'etat charge */ }
+  }
+  $('etat-date').textContent = demande ? 'demandé au PC…' : $('etat-date').textContent;
+  setTimeout(() => { b.disabled = false; b.classList.remove('tourne'); }, demande ? 60_000 : 1500);
+  if (demande) { setTimeout(rafraichir, 45_000); setTimeout(rafraichir, 90_000); }
+});
 
 /* ═════════ Rafraichir sans repasser par l'ecran du verrou (apres un ordre) ═════════ */
 async function rafraichir() {

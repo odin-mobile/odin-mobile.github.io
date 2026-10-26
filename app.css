@@ -415,7 +415,7 @@ button { font: inherit; color: inherit; }
 .statut-ligne .mono { text-align: right; color: var(--ink-1); }
 .cases { list-style: none; display: grid; gap: 8px; }
 .cases li { font-size: 14px; padding: 8px 10px; border-radius: 10px; background: var(--plate-well); overflow-wrap: anywhere; }
-.cases li::before { content: "☐ "; color: var(--c-beam); font-family: var(--ff-mono); }
+.cases li:not(.case)::before { content: "☐ "; color: var(--c-beam); font-family: var(--ff-mono); }
 .cases .cs-proj { display: block; font-family: var(--ff-mono); font-size: 11px; color: var(--ink-3); margin-top: 3px; }
 .news-titre { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
 .news-ton { font-size: 14px; color: var(--ink-2); white-space: pre-wrap; }
@@ -494,3 +494,20 @@ button { font: inherit; color: inherit; }
 .lancer:active:not(:disabled) { transform: scale(.98); }
 .fiche-note.ok { color: var(--c-beam); }
 .fiche-note.erreur { color: var(--c-flag); }
+
+/* Cases cochables et bouton Actualiser (2026-10-26) */
+.cases li.case { padding: 0; }
+.case-btn { display: flex; gap: 10px; align-items: flex-start; width: 100%; min-height: 44px; padding: 10px 10px 2px;
+  border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.case-boite { font-family: var(--ff-mono); color: var(--c-beam); font-size: 18px; line-height: 1; }
+.case-texte { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.cases li.case .cs-proj { padding: 0 10px 8px 38px; }
+.cases li.coche .case-texte { text-decoration: line-through; color: var(--ink-3); }
+.cases li.attente .cs-proj { color: var(--c-flag); }
+.cases-sous { margin: 14px 0 8px; }
+.actualiser { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--c-beam); background: var(--plate-well);
+  color: var(--c-beam); font-size: 18px; line-height: 1; cursor: pointer; }
+.actualiser:disabled { opacity: .6; }
+.actualiser.tourne { animation: tourne 1.2s linear infinite; }
+@keyframes tourne { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .actualiser.tourne { animation: none; } }

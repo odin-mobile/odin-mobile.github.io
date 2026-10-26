@@ -1,10 +1,12 @@
 # ODIN Mobile
 
-Le dernier état connu d'ODIN (le centre de commandement personnel d'Amir), sur téléphone, en lecture, avec **une seule action** : lancer la ronde d'un agent.
+Le dernier état connu d'ODIN (le centre de commandement personnel d'Amir), sur téléphone, en lecture, avec **deux actions à distance** : lancer la ronde d'un agent, cocher une tâche des récaps.
 
 - L'appli ne lit qu'un seul fichier : `etat.chiffre.json`, **chiffré** (AES-256-GCM, clé dérivée d'une phrase secrète par PBKDF2-SHA-256, 600 000 itérations). Sans la phrase, il est illisible.
 - **Lancer une ronde** (fiche d'un agent, depuis la liste ou la scène 3D) : l'appli dépose un ordre **chiffré avec la même phrase** dans une boîte aux lettres ntfy.sh dont l'adresse n'est connue que de l'état chiffré. Le PC, s'il est allumé et connecté, le lit, vérifie tout (agent autorisé, ordre de moins de 2 h, jamais deux fois) et lance la ronde. Sans la phrase, un ordre est ignoré.
 - Un agent avec IA demande un second appui (« coûte des jetons »).
+- **Cocher une tâche** (onglet Synthèse) : même boîte, ordre chiffré « case ». La tâche reste « en attente du PC » ; le téléphone renvoie l'ordre à chaque ouverture tant que le PC ne l'a pas appliqué (valable 7 jours). Le PC coche la case dans le récap Obsidian (copie avant, journal), et ODIN la voit cochée.
+- **⟳ Actualiser** (en haut) : recharge l'état et demande au PC d'en publier un frais.
 - Aucune clé d'IA dans l'appli ; aucun autre site contacté que ntfy.sh, et seulement pour cet ordre (Content-Security-Policy stricte).
 - L'état est publié depuis le PC par l'Agent 26 « Passerelle mobile », seulement quand il change.
 

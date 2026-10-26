@@ -41,7 +41,7 @@
       <div class="orbe-mini" aria-hidden="true"></div>
       <div>
         <div class="logo-texte">ODIN</div>
-        <div class="logo-sous">LECTURE SEULE</div>
+        <div class="logo-sous">MOBILE</div>
       </div>
     </div>
     <div class="etat-au">
@@ -51,6 +51,7 @@
         <button class="theme-btn" data-theme-id="tokyo" aria-pressed="false" aria-label="Thème Dark Tokyo Cyberpunk"><i></i></button>
       </div>
       <span id="etat-date" class="mono">—</span>
+      <button id="actualiser" class="actualiser" type="button" aria-label="Actualiser l'état (demande au PC un état frais)">⟳</button>
       <span id="badge-reseau" class="badge" hidden>HORS LIGNE</span>
     </div>
   </header>
@@ -149,6 +150,10 @@
       <div class="plaque">
         <div class="plaque-tete"><span class="plaque-titre">Cases ouvertes</span><span id="sy-nbcases" class="compte mono"></span></div>
         <ul id="sy-cases" class="cases"></ul>
+        <div id="sy-faites-bloc" hidden>
+          <div class="t-lib cases-sous">COCHÉES DEPUIS LE TÉLÉPHONE · touche pour annuler</div>
+          <ul id="sy-faites" class="cases"></ul>
+        </div>
       </div>
       <div class="plaque">
         <div class="plaque-tete"><span class="plaque-titre">AI Daily News</span><span id="sy-news-date" class="compte mono"></span></div>

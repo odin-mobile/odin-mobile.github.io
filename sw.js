@@ -5,7 +5,7 @@
      (marque d'un en-tete x-odin-cache: 1 pour que l'appli affiche « HORS LIGNE »).
    Seule exception, hors service worker : l'ordre chiffre « lancer une ronde » (ordre-odin.js, POST ntfy.sh).
    ══════════════════════════════════════════════════════════════ */
-const VERSION = 'odin-mobile-v7';   // v7 : lancer une ronde (v6 : Agent Office, v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
+const VERSION = 'odin-mobile-v8';   // v8 : cases a cocher et Actualiser (v7 : lancer une ronde, v6 : Agent Office, v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
 const COQUILLE = ['./', 'index.html', 'app.css', 'app.js', 'theme.js', 'scenes.js', 'crypto-odin.js', 'ordre-odin.js', 'chambre-poles.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/saira.woff2', 'fonts/orbitron.woff2', 'fonts/plex-mono-400.woff2', 'fonts/plex-mono-500.woff2', 'fonts/plex-mono-600.woff2'];
