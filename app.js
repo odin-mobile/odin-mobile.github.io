@@ -543,6 +543,13 @@ async function rafraichir() {
 
 /* ═════════ Lancer une ronde depuis la fiche ═════════ */
 let ficheId = null, armeIa = null;
+// Ce que consomme une ronde (champ « paiement » de l'etat ; un etat ancien sans ce champ = cle par prudence).
+const COUTS = {
+  'abo-gemini': { bouton: ' · utilise ton quota Gemini Pro', moteur: ' · abo Gemini Pro' },
+  'abo-chatgpt': { bouton: ' · utilise ton quota ChatGPT gratuit', moteur: ' · ChatGPT gratuit' },
+  cle: { bouton: ' · coûte des jetons (clé API)', moteur: ' · clé API' },
+};
+const cout = a => (!a.ia ? '' : COUTS[a.paiement] ? a.paiement : 'cle');
 function preparerLancer(a) {
   const b = $('fi-lancer'), m = $('fi-lancer-msg');
   const possible = !!(a.lancable && E?.boite);
@@ -550,8 +557,8 @@ function preparerLancer(a) {
   if (!possible) return;
   armeIa = null;
   b.disabled = false;
-  b.textContent = a.ia ? 'Lancer une ronde · utilise des jetons' : 'Lancer une ronde';
-  b.classList.toggle('cout', !!a.ia);
+  b.textContent = `Lancer une ronde${COUTS[cout(a)]?.bouton || ''}`;
+  b.classList.toggle('cout', cout(a) === 'cle');
   m.textContent = 'Le PC la lance s’il est allumé et connecté.';
   m.className = 'mono fiche-note';
 }
@@ -560,9 +567,9 @@ $('fi-lancer').addEventListener('click', async () => {
   const phrase = memoire.lire(CLE_PHRASE);
   const b = $('fi-lancer'), m = $('fi-lancer-msg');
   if (!a || !phrase) return;
-  if (a.ia && armeIa !== a.id) {          // agent avec IA : un second appui confirme
+  if (cout(a) === 'cle' && armeIa !== a.id) {   // cle d'API (payante) : un second appui confirme
     armeIa = a.id;
-    b.textContent = 'Confirmer · coûte des jetons';
+    b.textContent = 'Confirmer · coûte des jetons (clé API)';
     m.textContent = 'Appuie encore pour confirmer.';
     return;
   }
@@ -598,7 +605,7 @@ function ouvrirFiche(id) {
   $('fi-desc').hidden = !a.desc;
   $('fi-ronde').textContent = estPont(a) ? libPont(a) : a.ronde ? dateCourte(a.ronde) : 'jamais';
   $('fi-rythme').textContent = LIB_RYTHME[a.rythme] || a.rythme;
-  $('fi-moteur').textContent = a.ia ? 'avec IA' : 'code seul, sans IA';
+  $('fi-moteur').textContent = a.ia ? `avec IA${COUTS[cout(a)]?.moteur || ''}` : 'code seul, sans IA';
   $('fi-moteur').className = `t-val ${a.ia ? 'cyan' : ''}`;
   $('fi-pole').textContent = POLES[a.pole] || POLES.autres;
   $('fi-alertes').replaceChildren(...(a.alertes.length ? a.alertes.map(t => el('li', null, t))
