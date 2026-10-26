@@ -484,3 +484,13 @@ button { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* Lancer une ronde depuis la fiche (2026-10-26) */
+.fiche-action { margin-top: 14px; display: grid; gap: 6px; }
+.lancer { min-height: 48px; padding: 12px 16px; border-radius: 14px; border: 1px solid var(--c-beam);
+  background: var(--plate-well); color: var(--ink-1); font: inherit; font-weight: 700; letter-spacing: .02em; }
+.lancer.cout { border-color: var(--c-flag); }
+.lancer:disabled { opacity: .55; }
+.lancer:active:not(:disabled) { transform: scale(.98); }
+.fiche-note.ok { color: var(--c-beam); }
+.fiche-note.erreur { color: var(--c-flag); }

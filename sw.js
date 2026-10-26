@@ -3,10 +3,10 @@
    · l'appli (coquille) : servie depuis le cache, mise a jour en fond a chaque lancement ;
    · etat.chiffre.json : le reseau d'abord, le dernier etat en cache si hors ligne
      (marque d'un en-tete x-odin-cache: 1 pour que l'appli affiche « HORS LIGNE »).
-   Rien d'autre n'est demande au reseau : aucune autre origine n'est jamais contactee.
+   Seule exception, hors service worker : l'ordre chiffre « lancer une ronde » (ordre-odin.js, POST ntfy.sh).
    ══════════════════════════════════════════════════════════════ */
-const VERSION = 'odin-mobile-v6';   // v6 : Agent Office (v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
-const COQUILLE = ['./', 'index.html', 'app.css', 'app.js', 'theme.js', 'scenes.js', 'crypto-odin.js', 'chambre-poles.js',
+const VERSION = 'odin-mobile-v7';   // v7 : lancer une ronde (v6 : Agent Office, v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
+const COQUILLE = ['./', 'index.html', 'app.css', 'app.js', 'theme.js', 'scenes.js', 'crypto-odin.js', 'ordre-odin.js', 'chambre-poles.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/saira.woff2', 'fonts/orbitron.woff2', 'fonts/plex-mono-400.woff2', 'fonts/plex-mono-500.woff2', 'fonts/plex-mono-600.woff2'];
 const ETAT = 'etat.chiffre.json';

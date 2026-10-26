@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- Lecture seule par construction : aucune source externe, un seul fichier de donnees (etat.chiffre.json). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://ntfy.sh; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#090016">
 <meta name="color-scheme" content="dark light">
@@ -175,7 +175,7 @@
   </nav>
 </div>
 
-<!-- ═══════════ FICHE D'UN AGENT (lecture seule) ═══════════ -->
+<!-- ═══════════ FICHE D'UN AGENT (lecture + lancer une ronde) ═══════════ -->
 <dialog id="fiche" class="fiche" aria-labelledby="fi-nom">
   <div class="fiche-tete">
     <div id="fi-sig" class="glyphe grand"></div>
@@ -196,7 +196,10 @@
     <div class="t-lib rose">CONSTATS À REGARDER</div>
     <ul id="fi-alertes"></ul>
   </div>
-  <p class="mono fiche-note">Consultation seule : n'applique rien, ne relance rien.</p>
+  <div id="fi-action" class="fiche-action" hidden>
+    <button id="fi-lancer" class="lancer" type="button">Lancer une ronde</button>
+    <p id="fi-lancer-msg" class="mono fiche-note" aria-live="polite"></p>
+  </div>
 </dialog>
 
 </body>

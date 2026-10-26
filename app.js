@@ -1,14 +1,16 @@
 /* ══════════════════════════════════════════════════════════════
-   ODIN MOBILE — l'appli (lecture seule)
+   ODIN MOBILE — l'appli (lecture, plus une seule action : lancer une ronde)
 
-   Un seul appel reseau : etat.chiffre.json, sur ce meme site.
+   Lecture : etat.chiffre.json, sur ce meme site. Unique ecriture (2026-10-26) : un ordre
+   chiffre « lancer la ronde » depose dans la boite du PC (ordre-odin.js).
    La phrase secrete est demandee une fois et gardee sur ce telephone.
    Tout texte venant de l'etat passe par textContent : jamais d'HTML.
-   Les seuls boutons changent ce qu'on REGARDE (ecran, filtre, scene)
-   ou oublient la phrase. Aucun ne parle a ODIN.
+   Les autres boutons changent ce qu'on REGARDE (ecran, filtre, scene)
+   ou oublient la phrase.
    ══════════════════════════════════════════════════════════════ */
 
 import { dechiffrer, PhraseIncorrecte } from './crypto-odin.js';
+import { envoyerRonde } from './ordre-odin.js';
 import { creerScenes } from './scenes.js';
 import { POLES } from './chambre-poles.js';
 
@@ -418,15 +420,71 @@ function rendreSkills() {
       : 'Aucune compétence ne correspond.')]));
 }
 
+/* ═════════ Rafraichir sans repasser par l'ecran du verrou (apres un ordre) ═════════ */
+async function rafraichir() {
+  const phrase = memoire.lire(CLE_PHRASE);
+  if (!phrase) return;
+  try {
+    const { paquet, depuisCache } = await chargerPaquet();
+    E = await dechiffrer(paquet, phrase);
+    afficher(depuisCache);
+    if ($('fiche').open && ficheId) ouvrirFiche(ficheId);
+  } catch { /* on garde ce qui est affiche */ }
+}
+
+/* ═════════ Lancer une ronde depuis la fiche ═════════ */
+let ficheId = null, armeIa = null;
+function preparerLancer(a) {
+  const b = $('fi-lancer'), m = $('fi-lancer-msg');
+  const possible = !!(a.lancable && E?.boite);
+  $('fi-action').hidden = !possible;
+  if (!possible) return;
+  armeIa = null;
+  b.disabled = false;
+  b.textContent = a.ia ? 'Lancer une ronde · utilise des jetons' : 'Lancer une ronde';
+  b.classList.toggle('cout', !!a.ia);
+  m.textContent = 'Le PC la lance s’il est allumé et connecté.';
+  m.className = 'mono fiche-note';
+}
+$('fi-lancer').addEventListener('click', async () => {
+  const a = E?.agents.find(x => x.id === ficheId);
+  const phrase = memoire.lire(CLE_PHRASE);
+  const b = $('fi-lancer'), m = $('fi-lancer-msg');
+  if (!a || !phrase) return;
+  if (a.ia && armeIa !== a.id) {          // agent avec IA : un second appui confirme
+    armeIa = a.id;
+    b.textContent = 'Confirmer · coûte des jetons';
+    m.textContent = 'Appuie encore pour confirmer.';
+    return;
+  }
+  armeIa = null;
+  b.disabled = true;
+  m.textContent = 'Chiffrement et envoi…';
+  try {
+    await envoyerRonde(E.boite, a.id, phrase);
+    b.textContent = 'Ordre envoyé ✓';
+    m.textContent = 'Ordre envoyé. Si le PC est allumé, le verdict arrive ici dans 1 à 2 minutes.';
+    m.className = 'mono fiche-note ok';
+    setTimeout(rafraichir, 75_000);
+    setTimeout(rafraichir, 150_000);
+  } catch (err) {
+    b.disabled = false;
+    m.textContent = err instanceof TypeError ? 'Pas de réseau : ordre non envoyé.' : `Ordre non envoyé : ${err.message}`;
+    m.className = 'mono fiche-note erreur';
+  }
+});
+
 /* ═════════ Fiche agent ═════════ */
 function ouvrirFiche(id) {
   const a = E?.agents.find(x => x.id === id);
   if (!a) return;
   const v = verdictSur(a.verdict);
+  if (ficheId !== id || !$('fiche').open) preparerLancer(a);
+  ficheId = id;
   const g = $('fi-sig');
   g.textContent = sig(a); g.style.color = coulVerdict(v); g.style.borderColor = coulVerdict(v);
   $('fi-nom').textContent = a.nom;
-  $('fi-sous').textContent = `${estPont(a) ? 'PONT CLAUDE CODE' : `AGENT N°${a.numero}`} · ${libVerdict(v)} · LECTURE SEULE`;
+  $('fi-sous').textContent = `${estPont(a) ? 'PONT CLAUDE CODE' : `AGENT N°${a.numero}`} · ${libVerdict(v)}`;
   $('fi-desc').textContent = a.desc || '';
   $('fi-desc').hidden = !a.desc;
   $('fi-ronde').textContent = estPont(a) ? libPont(a) : a.ronde ? dateCourte(a.ronde) : 'jamais';

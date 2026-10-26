@@ -31,3 +31,20 @@ export async function dechiffrer(paquet, phrase) {
   }
   return JSON.parse(new TextDecoder().decode(clair));
 }
+
+/* ── Chiffrer un ordre (2026-10-26) : meme format et memes reglages que l'etat publie par le PC,
+      pour que la Passerelle (boite.py) le relise avec la meme phrase. ── */
+export const ITER_ORDRE = 600_000;
+const base64 = u8 => btoa(String.fromCharCode(...u8));
+
+export async function chiffrer(objet, phrase, iter = ITER_ORDRE) {
+  const subtle = globalThis.crypto.subtle;
+  const sel = globalThis.crypto.getRandomValues(new Uint8Array(16));
+  const nonce = globalThis.crypto.getRandomValues(new Uint8Array(12));
+  const base = await subtle.importKey('raw', new TextEncoder().encode(phrase), 'PBKDF2', false, ['deriveKey']);
+  const cle = await subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: sel, iterations: iter },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+  const chiffre = new Uint8Array(await subtle.encrypt({ name: 'AES-GCM', iv: nonce }, cle,
+    new TextEncoder().encode(JSON.stringify(objet))));
+  return { v: 1, alg: 'AES-256-GCM', kdf: 'PBKDF2-SHA-256', iter, sel: base64(sel), nonce: base64(nonce), donnees: base64(chiffre) };
+}
