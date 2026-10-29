@@ -205,6 +205,15 @@
     <button id="fi-lancer" class="lancer" type="button">Lancer une ronde</button>
     <p id="fi-lancer-msg" class="mono fiche-note" aria-live="polite"></p>
   </div>
+  <div id="fi-pause-zone" class="fiche-action" hidden>
+    <button id="fi-pause" class="lancer pause-btn" type="button">Mettre en pause</button>
+    <p id="fi-pause-msg" class="mono fiche-note" aria-live="polite"></p>
+  </div>
+  <div id="fi-relais" class="fiche-relais" hidden>
+    <div class="t-lib">RÉSULTATS À RELIRE <span id="fi-relais-nb" class="mono"></span></div>
+    <p class="mono fiche-note">Ta décision est seulement enregistrée : rien n’est appliqué. Claude relit, teste puis applique (accord) ou range (refus) à la prochaine session.</p>
+    <ul id="fi-relais-liste" class="relais-liste"></ul>
+  </div>
 </dialog>
 
 </body>

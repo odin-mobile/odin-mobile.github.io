@@ -2,7 +2,9 @@
    ODIN MOBILE — l'appli (lecture, plus deux actions a distance)
 
    Lecture : etat.chiffre.json, sur ce meme site. Unique ecriture (2026-10-26) : un ordre
-   chiffre depose dans la boite du PC (ordre-odin.js) : lancer une ronde, cocher une tache.
+   chiffre depose dans la boite du PC (ordre-odin.js) : lancer une ronde, cocher une tache ;
+   depuis le 2026-10-29, mettre un agent en pause ou le reprendre, et enregistrer une decision
+   (accord ou refus) sur un resultat de Relais a relire — le PC n'applique jamais rien.
    La phrase secrete est demandee une fois et gardee sur ce telephone.
    Tout texte venant de l'etat passe par textContent : jamais d'HTML.
    Les autres boutons changent ce qu'on REGARDE (ecran, filtre, scene)
@@ -20,6 +22,9 @@ const CLE_THEME = 'odin-mobile.theme';
 const CLE_ATTENTE = 'odin-mobile.cases-attente';   // cases cochees ici, pas encore appliquees par le PC
 const CLE_FAITES = 'odin-mobile.cases-faites';     // cases cochees ici et appliquees (7 jours, pour annuler)
 const CASE_GARDE_MS = 7 * 24 * 3600 * 1000;
+const CLE_ORDRES = 'odin-mobile.ordres-attente';    // ordres « pause » et « relais » pas encore traites par le PC
+const CLE_REPONSES = 'odin-mobile.ordres-reponses'; // leur sort (refus du PC compris), 7 jours
+const GARDE_ORDRE_MS = { pause: 2 * 3600 * 1000, relais: CASE_GARDE_MS };   // memes ages maximum que le PC
 const VUES = ['command', 'agents', 'nexus', 'synthese', 'skills'];
 const ANCIEN_MS = 2 * 3600 * 1000;
 const $ = id => document.getElementById(id);
@@ -45,6 +50,8 @@ const SIG = {
   heraut: 'HÉ', relais: 'RG', metronome: 'MÉ', vigie: 'VA', quotas: 'GQ', trieur: 'TO', analyste: 'AC',
   passeur: 'PD', cenacle: 'CÉ', eclaireur: 'ÉE', banc: 'BE', relecteur: 'RE', scribe: 'SC',
   diagnostiqueur: 'DI', chroniqueur: 'CH', plume: 'PL', passerelle: 'PM', relaischatgpt: 'RC', 'agent-office': 'AO',
+  // 2026-10-29 : agents construits depuis le 26.10, memes sigles qu'ODIN (REAL_META de odin.js).
+  notaire: 'NO', vigile: 'VV', canari: 'CN', vitrines: 'GV', sources: 'SR', tisseur: 'TS',
 };
 const sig = a => SIG[a.id] || String(a.nom || '?').slice(0, 2).toUpperCase();
 const LIB_VERDICT = { SAIN: 'SAIN', ATTENTION: 'ATTENTION', ALERTE: 'ALERTE', PAUSE: 'EN PAUSE', VU: 'VU', INCONNU: 'SANS ÉTAT' };
@@ -137,8 +144,10 @@ function afficher(depuisCache) {
   b.hidden = !(age > ANCIEN_MS);
   b.textContent = `État ancien : ODIN n’a rien publié de nouveau depuis ${depuis(E.genere).replace('il y a ', '')}. Le PC est peut-être éteint.`;
   resoudreCases();
+  resoudreOrdres();
   rendreCommand(); rendreAgents(); rendreNexus(); rendreSynthese(); rendreSkills();
   renvoyerCases();
+  renvoyerOrdres();
   if (!scenes) {
     scenes = creerScenes($('scene'), $('scene-lecture'), { ouvrirAgent: ouvrirFiche });
     scenes.theme(document.documentElement.dataset.theme);
@@ -590,13 +599,168 @@ $('fi-lancer').addEventListener('click', async () => {
   }
 });
 
+/* ═════════ Ordres « pause » et « relais » (2026-10-29) ═════════
+   Comme une case : l'ordre reste « en attente du PC » (et repart a chaque ouverture, meme numero)
+   jusqu'a ce que l'etat publie donne son sort (champ « reponses ») ou qu'il soit trop ancien. */
+function resoudreOrdres() {
+  if (!E) return;
+  const sorts = new Map((E.reponses || []).map(r => [r.id, r]));
+  const maintenant = Date.now();
+  let reponses = liste(CLE_REPONSES).filter(r => maintenant - Date.parse(r.quand) < CASE_GARDE_MS);
+  const reste = [];
+  for (const o of liste(CLE_ORDRES)) {
+    const s = sorts.get(o.id);
+    if (s) reponses = [...reponses.filter(r => r.id !== o.id), { ...o, resultat: s.resultat, motif: s.motif, quand: E.genere }];
+    else if (maintenant - Date.parse(o.emis) < (GARDE_ORDRE_MS[o.ordre] || 0)) reste.push(o);
+    else reponses.push({ ...o, resultat: 'expiré', motif: 'le PC ne l’a pas reçu à temps (éteint ?)', quand: new Date().toISOString() });
+  }
+  garder(CLE_ORDRES, reste);
+  garder(CLE_REPONSES, reponses.slice(-40));
+}
+
+let renvoiOrdresFait = false;
+async function renvoyerOrdres() {
+  const phrase = memoire.lire(CLE_PHRASE);
+  if (renvoiOrdresFait || !phrase || !E?.boite || !navigator.onLine) return;
+  renvoiOrdresFait = true;
+  for (const o of liste(CLE_ORDRES)) {
+    try { await envoyerOrdre(E.boite, o, phrase); } catch { /* reessai a la prochaine ouverture */ }
+  }
+}
+
+/** Envoie un ordre et le garde « en attente du PC ». Rend un message d'erreur, ou '' si parti. */
+async function envoyerSuivi(o) {
+  const phrase = memoire.lire(CLE_PHRASE);
+  if (!phrase || !E?.boite) return 'Phrase ou boîte absente.';
+  const complet = { ...o, id: numero(), emis: new Date().toISOString() };
+  let erreur = '';
+  try { await envoyerOrdre(E.boite, complet, phrase); }
+  catch (err) { erreur = err instanceof TypeError ? 'Pas de réseau : l’ordre repartira à la prochaine ouverture.' : `Ordre non envoyé : ${err.message}`; }
+  if (!erreur || erreur.startsWith('Pas de réseau')) {
+    garder(CLE_ORDRES, [...liste(CLE_ORDRES), complet]);
+    if (erreur) renvoiOrdresFait = false;
+  }
+  setTimeout(rafraichir, 60_000);
+  setTimeout(rafraichir, 120_000);
+  return erreur;
+}
+
+const enAttenteDe = test => liste(CLE_ORDRES).find(test);
+const dernierSort = test => liste(CLE_REPONSES).filter(test).sort((a, b) => Date.parse(b.emis) - Date.parse(a.emis))[0];
+const REFUS = new Set(['refusé', 'échec', 'expiré']);
+
+/* ── Pause / reprise d'un agent ── */
+let armePause = null;
+function preparerPause(a) {
+  const zone = $('fi-pause-zone'), b = $('fi-pause'), m = $('fi-pause-msg');
+  zone.hidden = !(a.pausable && E?.boite);
+  if (zone.hidden) return;
+  const attente = enAttenteDe(o => o.ordre === 'pause' && o.agent === a.id);
+  const sort = dernierSort(o => o.ordre === 'pause' && o.agent === a.id);
+  b.classList.toggle('reprendre', a.pause);
+  b.classList.toggle('arme', armePause === a.id);
+  m.className = 'mono fiche-note';
+  if (attente) {
+    b.disabled = true;
+    b.textContent = attente.actif ? 'Reprise en attente du PC…' : 'Pause en attente du PC…';
+    m.textContent = 'Ordre envoyé. Si le PC est allumé, l’état change ici dans 1 à 2 minutes.';
+    return;
+  }
+  b.disabled = false;
+  if (armePause === a.id) {
+    b.textContent = 'Confirmer · la surveillance s’arrête';
+    m.textContent = `${a.nom} est un agent de surveillance : appuie encore pour confirmer la pause.`;
+    return;
+  }
+  b.textContent = a.pause ? 'Reprendre' : 'Mettre en pause';
+  if (sort && REFUS.has(sort.resultat) && Date.now() - Date.parse(sort.emis) < 24 * 3600 * 1000) {
+    m.textContent = `Dernier ordre refusé par le PC : ${sort.motif || sort.resultat}.`;
+    m.className = 'mono fiche-note erreur';
+  } else {
+    m.textContent = a.pause ? 'Agent en pause : sa tâche Windows est désactivée.'
+      : 'Désactive sa tâche Windows (comme l’interrupteur d’ODIN). La reprise est toujours possible.';
+  }
+}
+$('fi-pause').addEventListener('click', async () => {
+  const a = E?.agents.find(x => x.id === ficheId);
+  if (!a || !a.pausable) return;
+  if (a.securite && !a.pause && armePause !== a.id) {   // surveillance : un second appui confirme
+    armePause = a.id;
+    preparerPause(a);
+    return;
+  }
+  armePause = null;
+  $('fi-pause').disabled = true;
+  const erreur = await envoyerSuivi({ ordre: 'pause', agent: a.id, actif: a.pause });
+  preparerPause(a);
+  if (erreur) { $('fi-pause-msg').textContent = erreur; $('fi-pause-msg').className = 'mono fiche-note erreur'; }
+});
+
+/* ── Resultats de Relais a relire : decision « accord » ou « refus », jamais rien d'applique ── */
+const RELAIS_DE = { relais: 'gemini', relaischatgpt: 'chatgpt' };
+const LIB_MOTEUR = { gemini: 'Gemini', chatgpt: 'ChatGPT' };
+const LIB_DECISION = { accord: 'Accord pour relecture', refus: 'Refus' };
+let armeRelais = null;      // « moteur/tache/decision » arme par un premier appui
+let erreurRelais = null;    // { cle, texte } : dernier envoi impossible, affiche sous le resultat
+
+function rendreRelais(a) {
+  const moteur = RELAIS_DE[a.id];
+  const bloc = $('fi-relais');
+  const res = moteur ? (E.relais || []).filter(r => r.moteur === moteur) : [];
+  bloc.hidden = !moteur;
+  if (!moteur) return;
+  $('fi-relais-nb').textContent = `· ${res.length}`;
+  $('fi-relais-liste').replaceChildren(...(res.length ? res.map(r => ligneRelais(r)) : [el('li', 'vide', 'Aucun résultat en attente de relecture.')]));
+}
+
+function ligneRelais(r) {
+  const cle = `${r.moteur}/${r.tache}`;
+  const attente = enAttenteDe(o => o.ordre === 'relais' && `${o.moteur}/${o.tache}` === cle);
+  const sort = dernierSort(o => o.ordre === 'relais' && `${o.moteur}/${o.tache}` === cle);
+  const decision = r.decision || '';
+  const li = el('li', `relais-item${decision ? ` d-${decision}` : ''}`);
+  const f = r.fichiers, l = r.lignes;
+  li.append(el('div', 'relais-titre', r.titre),
+    el('div', 'mono relais-meta', `${LIB_MOTEUR[r.moteur]} · ${dateCourte(r.date)} · ${nombre(l)} ligne${l > 1 ? 's' : ''} · ${f} fichier${f > 1 ? 's' : ''}`));
+  if (decision) {
+    li.append(el('div', `relais-decision d-${decision}`, `Décision enregistrée : ${LIB_DECISION[decision]}`));
+    return li;
+  }
+  if (attente) {
+    li.append(el('div', 'relais-decision d-attente', `${LIB_DECISION[attente.decision]} · envoyé, en attente du PC`));
+    return li;
+  }
+  if (sort && REFUS.has(sort.resultat)) li.append(el('div', 'mono fiche-note erreur', `Refusé par le PC : ${sort.motif || sort.resultat}.`));
+  if (erreurRelais?.cle === cle) li.append(el('div', 'mono fiche-note erreur', erreurRelais.texte));
+  if (!E.boite) return li;
+  const boutons = el('div', 'relais-boutons');
+  for (const d of ['accord', 'refus']) {
+    const arme = armeRelais === `${cle}/${d}`;
+    const b = el('button', `lancer ${d}${arme ? ' arme' : ''}`, arme ? `Confirmer · ${LIB_DECISION[d].toLowerCase()}` : LIB_DECISION[d]);
+    b.type = 'button';
+    b.addEventListener('click', async () => {
+      if (armeRelais !== `${cle}/${d}`) { armeRelais = `${cle}/${d}`; ouvrirFiche(ficheId); return; }   // second appui
+      armeRelais = null;
+      b.disabled = true;
+      const erreur = await envoyerSuivi({ ordre: 'relais', tache: r.tache, moteur: r.moteur, decision: d });
+      erreurRelais = erreur ? { cle, texte: erreur } : null;
+      ouvrirFiche(ficheId);
+    });
+    boutons.append(b);
+  }
+  li.append(boutons);
+  return li;
+}
+
 /* ═════════ Fiche agent ═════════ */
 function ouvrirFiche(id) {
   const a = E?.agents.find(x => x.id === id);
   if (!a) return;
   const v = verdictSur(a.verdict);
-  if (ficheId !== id || !$('fiche').open) preparerLancer(a);
+  if (ficheId !== id || !$('fiche').open) { preparerLancer(a); armePause = null; armeRelais = null; }
   ficheId = id;
+  preparerPause(a);
+  rendreRelais(a);
   const g = $('fi-sig');
   g.textContent = sig(a); g.style.color = coulVerdict(v); g.style.borderColor = coulVerdict(v);
   $('fi-nom').textContent = a.nom;

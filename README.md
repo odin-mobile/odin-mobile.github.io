@@ -54,3 +54,18 @@ Polices : Saira, Orbitron, IBM Plex Mono — SIL Open Font License 1.1 (voir `fo
 2. Neon est le thème par défaut ; Clair correspond à ODIN White ; Tokyo correspond à Dark Tokyo Cyberpunk.
 3. Le choix est gardé sur ce téléphone.
 4. Les scènes 3D suivent le thème.
+
+## Pause d'un agent et décisions de Relais (2026-10-29)
+
+### 1. Mettre un agent en pause ou le reprendre
+1. Ouvrir la fiche d'un agent (liste ou scène 3D).
+2. Appuyer sur « Mettre en pause » (ou « Reprendre » s'il est en pause).
+3. Pour le Notaire, le Canari et le Vigile des versions, un second appui confirme (« la surveillance s'arrête »).
+4. Le bouton affiche « en attente du PC » ; 1 à 2 minutes plus tard, si le PC est allumé, l'agent passe « EN PAUSE » (ou repart).
+5. La Passerelle et le Métronome ne se mettent jamais en pause depuis le téléphone. Un refus du PC s'affiche en clair sous le bouton.
+
+### 2. Donner sa décision sur un résultat de Relais
+1. Ouvrir la fiche du Relais Gemini ou du Relais ChatGPT.
+2. Le bloc « Résultats à relire » liste chaque résultat : titre, moteur, date, nombre de lignes et de fichiers (jamais de code).
+3. Appuyer sur « Accord pour relecture » ou « Refus », puis encore une fois pour confirmer.
+4. Rien n'est appliqué : la décision est seulement enregistrée sur le PC. Claude la lit au début de la session suivante (accord : il relit, teste puis applique ; refus : il range le résultat).
