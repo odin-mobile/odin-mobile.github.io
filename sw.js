@@ -5,7 +5,7 @@
      (marque d'un en-tete x-odin-cache: 1 pour que l'appli affiche « HORS LIGNE »).
    Seule exception, hors service worker : les ordres chiffres (ronde, case, pause, relais : ordre-odin.js, POST ntfy.sh).
    ══════════════════════════════════════════════════════════════ */
-const VERSION = 'odin-mobile-v10';  // v10 : pause/reprise et decisions de Relais, sigles des agents 27 a 32 (v9 : cout par agent (v8 : cases a cocher et Actualiser, v7 : lancer une ronde, v6 : Agent Office, v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
+const VERSION = 'odin-mobile-v11';  // v11 : reprise valable 24 h ; v10 : pause/reprise et decisions de Relais, sigles des agents 27 a 32 (v9 : cout par agent (v8 : cases a cocher et Actualiser, v7 : lancer une ronde, v6 : Agent Office, v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
 const COQUILLE = ['./', 'index.html', 'app.css', 'app.js', 'theme.js', 'scenes.js', 'crypto-odin.js', 'ordre-odin.js', 'chambre-poles.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/saira.woff2', 'fonts/orbitron.woff2', 'fonts/plex-mono-400.woff2', 'fonts/plex-mono-500.woff2', 'fonts/plex-mono-600.woff2'];

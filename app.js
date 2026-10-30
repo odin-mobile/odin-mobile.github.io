@@ -24,7 +24,9 @@ const CLE_FAITES = 'odin-mobile.cases-faites';     // cases cochees ici et appli
 const CASE_GARDE_MS = 7 * 24 * 3600 * 1000;
 const CLE_ORDRES = 'odin-mobile.ordres-attente';    // ordres « pause » et « relais » pas encore traites par le PC
 const CLE_REPONSES = 'odin-mobile.ordres-reponses'; // leur sort (refus du PC compris), 7 jours
-const GARDE_ORDRE_MS = { pause: 2 * 3600 * 1000, relais: CASE_GARDE_MS };   // memes ages maximum que le PC
+// Memes ages maximum que le PC : pause 2 h, reprise 24 h (2026-10-30), decision de Relais 7 jours.
+const GARDE_ORDRE_MS = { pause: 2 * 3600 * 1000, reprise: 24 * 3600 * 1000, relais: CASE_GARDE_MS };
+const garde = o => GARDE_ORDRE_MS[o.ordre === 'pause' && o.actif ? 'reprise' : o.ordre] || 0;
 const VUES = ['command', 'agents', 'nexus', 'synthese', 'skills'];
 const ANCIEN_MS = 2 * 3600 * 1000;
 const $ = id => document.getElementById(id);
@@ -611,7 +613,7 @@ function resoudreOrdres() {
   for (const o of liste(CLE_ORDRES)) {
     const s = sorts.get(o.id);
     if (s) reponses = [...reponses.filter(r => r.id !== o.id), { ...o, resultat: s.resultat, motif: s.motif, quand: E.genere }];
-    else if (maintenant - Date.parse(o.emis) < (GARDE_ORDRE_MS[o.ordre] || 0)) reste.push(o);
+    else if (maintenant - Date.parse(o.emis) < garde(o)) reste.push(o);
     else reponses.push({ ...o, resultat: 'expiré', motif: 'le PC ne l’a pas reçu à temps (éteint ?)', quand: new Date().toISOString() });
   }
   garder(CLE_ORDRES, reste);
