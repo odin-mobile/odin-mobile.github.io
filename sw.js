@@ -5,16 +5,19 @@
      (marque d'un en-tete x-odin-cache: 1 pour que l'appli affiche « HORS LIGNE »).
    Seule exception, hors service worker : les ordres chiffres (ronde, case, pause, relais : ordre-odin.js, POST ntfy.sh).
    ══════════════════════════════════════════════════════════════ */
-const VERSION = 'odin-mobile-v11';  // v11 : reprise valable 24 h ; v10 : pause/reprise et decisions de Relais, sigles des agents 27 a 32 (v9 : cout par agent (v8 : cases a cocher et Actualiser, v7 : lancer une ronde, v6 : Agent Office, v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
+const VERSION = 'odin-mobile-v12';  // v12 : portraits des agents et rubriques par pole ; v11 : reprise valable 24 h ; v10 : pause/reprise et decisions de Relais, sigles des agents 27 a 32 (v9 : cout par agent (v8 : cases a cocher et Actualiser, v7 : lancer une ronde, v6 : Agent Office, v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
 const COQUILLE = ['./', 'index.html', 'app.css', 'app.js', 'theme.js', 'scenes.js', 'crypto-odin.js', 'ordre-odin.js', 'chambre-poles.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/saira.woff2', 'fonts/orbitron.woff2', 'fonts/plex-mono-400.woff2', 'fonts/plex-mono-500.woff2', 'fonts/plex-mono-600.woff2'];
+// Portraits (miniatures) : au mieux, un echec n'empeche pas l'installation de l'appli.
+const MINIS = ['portraits/agent-office-mini.jpg', 'portraits/analyste-mini.jpg', 'portraits/archiviste-mini.jpg', 'portraits/banc-mini.jpg', 'portraits/canari-mini.jpg', 'portraits/cenacle-mini.jpg', 'portraits/chroniqueur-mini.jpg', 'portraits/concierge-mini.jpg', 'portraits/diagnostiqueur-mini.jpg', 'portraits/eclaireur-mini.jpg', 'portraits/gardien-mini.jpg', 'portraits/guetteur-mini.jpg', 'portraits/heraut-mini.jpg', 'portraits/metronome-mini.jpg', 'portraits/notaire-mini.jpg', 'portraits/passerelle-mini.jpg', 'portraits/passeur-mini.jpg', 'portraits/plume-mini.jpg', 'portraits/quotas-mini.jpg', 'portraits/relais-mini.jpg', 'portraits/relaischatgpt-mini.jpg', 'portraits/relecteur-mini.jpg', 'portraits/scribe-mini.jpg', 'portraits/sentinelle-mini.jpg', 'portraits/sources-mini.jpg', 'portraits/tisseur-mini.jpg', 'portraits/trieur-mini.jpg', 'portraits/veilleur-mini.jpg', 'portraits/vigie-mini.jpg', 'portraits/vigile-mini.jpg', 'portraits/vitrines-mini.jpg'];
 const ETAT = 'etat.chiffre.json';
 
 self.addEventListener('install', e => {
   // L'etat aussi, des la premiere visite : l'appli doit marcher hors ligne tout de suite (au mieux).
   e.waitUntil(caches.open(VERSION)
-    .then(c => c.addAll(COQUILLE).then(() => c.add(new Request(ETAT, { cache: 'no-store' })).catch(() => {})))
+    .then(c => c.addAll(COQUILLE).then(() => c.add(new Request(ETAT, { cache: 'no-store' })).catch(() => {}))
+      .then(() => Promise.all(MINIS.map(u => c.add(u).catch(() => {})))))
     .then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {

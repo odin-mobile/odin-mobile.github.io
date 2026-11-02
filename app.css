@@ -333,7 +333,11 @@ button { font: inherit; color: inherit; }
 }
 .filtre b { font-weight: 600; color: var(--ink-1); margin-left: 4px; }
 .filtre.actif { color: var(--c-beam-hi); border-color: var(--c-beam); background: linear-gradient(90deg, rgba(var(--rgb-beam), .2), rgba(var(--rgb-a2), .3)); }
-.groupe-titre { display: flex; align-items: center; gap: 10px; margin: 6px 0 8px; font-weight: 600; font-size: 14px; letter-spacing: .12em; text-transform: uppercase; }
+.groupe-titre { display: flex; align-items: center; gap: 10px; margin: 6px 0 8px; font-weight: 600; font-size: 14px; letter-spacing: .12em; text-transform: uppercase;
+  /* bouton : rubrique repliable (2026-11-02) */
+  width: 100%; min-height: 44px; padding: 0; background: none; border: 0; font-family: inherit; text-align: left; cursor: pointer; }
+.groupe-titre .gt-fleche { margin-left: auto; font-size: 16px; opacity: .8; }
+.groupe-titre:focus-visible { outline: 2px solid var(--c-beam-hi); outline-offset: 2px; border-radius: 6px; }
 .groupe-titre::before { content: ""; width: 4px; height: 18px; border-radius: 2px; background: currentColor; box-shadow: 0 0 10px currentColor; }
 .groupe-titre .nb { font-family: var(--ff-mono); font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; }
 .grille-agents { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
@@ -351,6 +355,19 @@ button { font: inherit; color: inherit; }
   background: var(--bg-glyphe); border: 1px solid var(--edge);
 }
 .glyphe.grand { width: 54px; height: 54px; font-size: 16px; }
+
+/* Portraits des agents (2026-11-02) : rond dans la liste, carre dans la fiche. --vc = couleur du verdict. */
+.avatar-p { position: relative; width: 60px; height: 60px; flex-shrink: 0; border-radius: 50%; }
+.avatar-p img { width: 100%; height: 100%; display: block; object-fit: cover; border-radius: inherit; background: var(--bg-glyphe);
+  box-shadow: 0 0 0 2px var(--vc), 0 0 12px -2px var(--vc); user-select: none; -webkit-user-drag: none; }
+.avatar-p .pip { position: absolute; top: 1px; right: 1px; width: 11px; height: 11px; border-radius: 50%; background: var(--vc);
+  box-shadow: 0 0 0 2px var(--plate-mid); }
+.carte-agent.pause .avatar-p img { filter: grayscale(.7); }
+.avatar-p.grand { width: 100%; height: auto; aspect-ratio: 1; border-radius: 18px; }
+.avatar-p.grand img { box-shadow: 0 0 0 2px var(--vc), 0 0 28px -6px var(--vc); }
+.avatar-p.grand .pip { top: 10px; right: 10px; width: 14px; height: 14px; box-shadow: 0 0 0 3px var(--bg-fiche); }
+.fiche-portrait { width: min(100%, 360px); margin: 4px auto 14px; }
+.fiche-portrait .glyphe { margin: 0 auto; }
 .ca-corps { flex: 1; min-width: 0; }
 .ca-ligne { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .ca-nom { font-size: 16px; font-weight: 600; color: var(--ink-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

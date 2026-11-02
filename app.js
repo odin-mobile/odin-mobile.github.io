@@ -239,12 +239,43 @@ function jauge(j) {
   return d;
 }
 
-function carteAgent(a) {
-  const v = verdictSur(a.verdict);
-  const btn = el('button', `carte-agent${GRAVE.has(v) ? ' grave' : ''}${v === 'PAUSE' ? ' pause' : ''}`);
-  const g = el('div', 'glyphe', sig(a));
+/* ═════════ Portraits des agents (2026-11-02) ═════════
+   Images creees par Amir, memes que sur ODIN (PC) : portraits/<id>.jpg (720 px, la fiche) et
+   portraits/<id>-mini.jpg (160 px, la liste). Un agent sans portrait, ou dont l'image ne charge pas
+   (hors ligne, pas encore en cache), garde l'ancienne pastille a deux lettres. */
+const PORTRAITS = new Set(['agent-office', 'analyste', 'archiviste', 'banc', 'canari', 'cenacle', 'chroniqueur',
+  'concierge', 'diagnostiqueur', 'eclaireur', 'gardien', 'guetteur', 'heraut', 'metronome', 'notaire', 'passerelle',
+  'passeur', 'plume', 'quotas', 'relais', 'relaischatgpt', 'relecteur', 'scribe', 'sentinelle', 'sources', 'tisseur',
+  'trieur', 'veilleur', 'vigie', 'vigile', 'vitrines']);
+
+/** La pastille a lettres (ancien avatar, et repli quand le portrait manque). */
+function pastilleLettres(a, v, grand) {
+  const g = el('div', `glyphe${grand ? ' grand' : ''}`, sig(a));
   g.style.color = coulVerdict(v);
   g.style.borderColor = coulVerdict(v);
+  return g;
+}
+
+/** Le portrait d'un agent (rond dans la liste, `grand` carre dans la fiche), avec un point a la couleur du verdict. */
+function avatarAgent(a, v, grand = false) {
+  if (!PORTRAITS.has(a.id)) return pastilleLettres(a, v, grand);
+  const box = el('div', `avatar-p${grand ? ' grand' : ''}`);
+  box.style.setProperty('--vc', coulVerdict(v));
+  const img = document.createElement('img');
+  img.src = `portraits/${a.id}${grand ? '' : '-mini'}.jpg`;
+  img.alt = grand ? `Portrait de ${a.nom}` : '';
+  img.loading = grand ? 'eager' : 'lazy';
+  img.decoding = 'async';
+  img.draggable = false;
+  img.addEventListener('error', () => box.replaceWith(pastilleLettres(a, v, grand)), { once: true });
+  box.append(img, el('span', 'pip'));
+  return box;
+}
+
+function carteAgent(a, avecPole = true) {
+  const v = verdictSur(a.verdict);
+  const btn = el('button', `carte-agent${GRAVE.has(v) ? ' grave' : ''}${v === 'PAUSE' ? ' pause' : ''}`);
+  const g = avatarAgent(a, v);
   const corps = el('div', 'ca-corps');
   const ligne = el('div', 'ca-ligne');
   const nom = el('span', 'ca-nom', a.nom);
@@ -252,7 +283,9 @@ function carteAgent(a) {
   ligne.append(nom, el('span', `pastille v-${v}`, libVerdict(v)));
   corps.append(ligne);
   if (a.desc) corps.append(el('div', 'ca-desc', a.desc));   // mini-phrase, venue de l'etat chiffre
-  corps.append(el('div', 'ca-info', `${libNumero(a)} · ${POLES[a.pole] || POLES.autres} · ${LIB_RYTHME[a.rythme] || a.rythme}`),
+  /* Dans une rubrique de pole, le pole est deja dans le titre : on ne le repete pas. */
+  corps.append(el('div', 'ca-info', [libNumero(a), avecPole ? (POLES[a.pole] || POLES.autres) : null, LIB_RYTHME[a.rythme] || a.rythme]
+      .filter(Boolean).join(' · ')),
     el('div', 'ca-info', estPont(a) ? libPont(a) : `ronde ${depuis(a.ronde)}`));
   if (GRAVE.has(v) && a.alertes[0]) corps.append(el('div', 'ca-alerte', a.alertes[0]));
   btn.append(g, corps);
@@ -268,20 +301,40 @@ function rendreAgents() {
   $('nav-nb').textContent = tous.length;
   const vus = tous.filter(a => filtre === 'tous' || (filtre === 'traiter' && GRAVE.has(a.verdict))
     || (filtre === 'ia' && a.ia) || (filtre === 'sans' && !a.ia));
+  /* Comme sur ODIN (PC) : « À traiter » en tete (une alerte ne se perd pas dans une rubrique), puis les
+     poles du registre ; dans chaque pole, les agents en pause passent en dernier. */
+  const poleDe = a => (POLES[a.pole] ? a.pole : 'autres');
   const groupes = [
-    ['À traiter', 'var(--c-flag)', vus.filter(a => GRAVE.has(a.verdict))],
-    ['En service', 'var(--c-seal)', vus.filter(a => !GRAVE.has(a.verdict) && a.verdict !== 'PAUSE')],
-    ['En pause', 'var(--v-pause)', vus.filter(a => a.verdict === 'PAUSE')],
-  ].filter(g => g[2].length);
-  $('groupes-agents').replaceChildren(...groupes.flatMap(([titre, col, liste]) => {
-    const t = el('div', 'groupe-titre', titre);
+    ['traiter', 'À traiter', 'var(--c-flag)', vus.filter(a => GRAVE.has(a.verdict)), true],
+    ...Object.keys(POLES).map(k => {
+      const ag = vus.filter(a => !GRAVE.has(a.verdict) && poleDe(a) === k);
+      return [k, POLES[k], 'var(--c-beam)', [...ag.filter(a => a.verdict !== 'PAUSE'), ...ag.filter(a => a.verdict === 'PAUSE')], false];
+    }),
+  ].filter(g => g[3].length);
+  $('groupes-agents').replaceChildren(...groupes.flatMap(([cle, titre, col, liste, avecPole]) => {
+    const ouvert = !repliees.has(cle);
+    const t = el('button', 'groupe-titre');
+    t.type = 'button';
     t.style.color = col;
-    t.append(el('span', 'nb', liste.length));
+    t.setAttribute('aria-expanded', String(ouvert));
+    t.append(el('span', 'gt-nom', titre), el('span', 'nb', liste.length), el('span', 'gt-fleche', ouvert ? '▾' : '▸'));
+    t.addEventListener('click', () => {
+      repliees.has(cle) ? repliees.delete(cle) : repliees.add(cle);
+      memoire.ecrire(CLE_REPLIEES, JSON.stringify([...repliees]));
+      rendreAgents();
+      document.querySelector(`.groupe-titre[data-cle="${cle}"]`)?.focus();
+    });
+    t.dataset.cle = cle;
+    if (!ouvert) return [t];
     const grille = el('div', 'grille-agents');
-    grille.append(...liste.map(carteAgent));
+    grille.append(...liste.map(a => carteAgent(a, avecPole)));
     return [t, grille];
   }));
 }
+
+/* Rubriques repliees (memorisees sur ce telephone, comme sur ODIN PC). */
+const CLE_REPLIEES = 'odin-mobile.agents-repliees';
+const repliees = new Set((() => { try { const l = JSON.parse(memoire.lire(CLE_REPLIEES) || '[]'); return Array.isArray(l) ? l : []; } catch { return []; } })());
 
 function rendreNexus() {
   const nx = E.nexus, jours = nx.jours;
@@ -763,8 +816,21 @@ function ouvrirFiche(id) {
   ficheId = id;
   preparerPause(a);
   rendreRelais(a);
+  /* Portrait en grand au-dessus du nom ; sans portrait, l'ancienne pastille a lettres reste a cote du nom. */
   const g = $('fi-sig');
+  const pt = $('fi-portrait');
+  const avecPortrait = PORTRAITS.has(a.id);
+  pt.hidden = !avecPortrait;
+  g.hidden = avecPortrait;
   g.textContent = sig(a); g.style.color = coulVerdict(v); g.style.borderColor = coulVerdict(v);
+  if (avecPortrait) {
+    const nv = `${a.id}|${v}`;
+    if (pt.dataset.cle !== nv) {     // inutile de recharger l'image a chaque rafraichissement de l'etat
+      pt.dataset.cle = nv;
+      const grand = avatarAgent(a, v, true);
+      pt.replaceChildren(grand);
+    }
+  } else { pt.replaceChildren(); delete pt.dataset.cle; }
   $('fi-nom').textContent = a.nom;
   $('fi-sous').textContent = `${estPont(a) ? 'PONT CLAUDE CODE' : `AGENT N°${a.numero}`} · ${libVerdict(v)}`;
   $('fi-desc').textContent = a.desc || '';
