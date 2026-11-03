@@ -366,7 +366,8 @@ button { font: inherit; color: inherit; }
 .avatar-p.grand { width: 100%; height: auto; aspect-ratio: 1; border-radius: 18px; }
 .avatar-p.grand img { box-shadow: 0 0 0 2px var(--vc), 0 0 28px -6px var(--vc); }
 .avatar-p.grand .pip { top: 10px; right: 10px; width: 14px; height: 14px; box-shadow: 0 0 0 3px var(--bg-fiche); }
-.fiche-portrait { width: min(100%, 360px); margin: 4px auto 14px; }
+/* 2026-11-03 : portrait de la fiche reduit ~17 % (360 -> 300 px ; 100 % -> 84 % sur telephone etroit). */
+.fiche-portrait { width: min(84%, 300px); margin: 4px auto 14px; }
 .fiche-portrait .glyphe { margin: 0 auto; }
 .ca-corps { flex: 1; min-width: 0; }
 .ca-ligne { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
