@@ -5,7 +5,7 @@
      (marque d'un en-tete x-odin-cache: 1 pour que l'appli affiche « HORS LIGNE »).
    Seule exception, hors service worker : les ordres chiffres (ronde, case, pause, relais : ordre-odin.js, POST ntfy.sh).
    ══════════════════════════════════════════════════════════════ */
-const VERSION = 'odin-mobile-v13';  // v13 : portrait de la fiche agent réduit ~17 % ; v12 : portraits des agents et rubriques par pole ; v11 : reprise valable 24 h ; v10 : pause/reprise et decisions de Relais, sigles des agents 27 a 32 (v9 : cout par agent (v8 : cases a cocher et Actualiser, v7 : lancer une ronde, v6 : Agent Office, v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
+const VERSION = 'odin-mobile-v14';  // v14 : installation avec fichiers frais (jamais le cache du navigateur) ; v13 : portrait de la fiche agent réduit ~17 % ; v12 : portraits des agents et rubriques par pole ; v11 : reprise valable 24 h ; v10 : pause/reprise et decisions de Relais, sigles des agents 27 a 32 (v9 : cout par agent (v8 : cases a cocher et Actualiser, v7 : lancer une ronde, v6 : Agent Office, v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
 const COQUILLE = ['./', 'index.html', 'app.css', 'app.js', 'theme.js', 'scenes.js', 'crypto-odin.js', 'ordre-odin.js', 'chambre-poles.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/saira.woff2', 'fonts/orbitron.woff2', 'fonts/plex-mono-400.woff2', 'fonts/plex-mono-500.woff2', 'fonts/plex-mono-600.woff2'];
@@ -16,7 +16,9 @@ const ETAT = 'etat.chiffre.json';
 self.addEventListener('install', e => {
   // L'etat aussi, des la premiere visite : l'appli doit marcher hors ligne tout de suite (au mieux).
   e.waitUntil(caches.open(VERSION)
-    .then(c => c.addAll(COQUILLE).then(() => c.add(new Request(ETAT, { cache: 'no-store' })).catch(() => {}))
+    // cache: 'reload' : sans lui, la nouvelle version pouvait reprendre l'ANCIEN app.css gardé 10 min par le
+    // cache du navigateur (GitHub Pages), et le téléphone affichait l'ancien style malgré la mise à jour.
+    .then(c => c.addAll(COQUILLE.map(u => new Request(u, { cache: 'reload' }))).then(() => c.add(new Request(ETAT, { cache: 'no-store' })).catch(() => {}))
       .then(() => Promise.all(MINIS.map(u => c.add(u).catch(() => {})))))
     .then(() => self.skipWaiting()));
 });
