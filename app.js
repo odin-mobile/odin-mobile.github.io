@@ -54,6 +54,7 @@ const SIG = {
   diagnostiqueur: 'DI', chroniqueur: 'CH', plume: 'PL', passerelle: 'PM', relaischatgpt: 'RC', 'agent-office': 'AO',
   // 2026-10-29 : agents construits depuis le 26.10, memes sigles qu'ODIN (REAL_META de odin.js).
   notaire: 'NO', vigile: 'VV', canari: 'CN', vitrines: 'GV', sources: 'SR', tisseur: 'TS',
+  intendant: 'IN',   // 2026-11-06 : Agent 33
 };
 const sig = a => SIG[a.id] || String(a.nom || '?').slice(0, 2).toUpperCase();
 const LIB_VERDICT = { SAIN: 'SAIN', ATTENTION: 'ATTENTION', ALERTE: 'ALERTE', PAUSE: 'EN PAUSE', VU: 'VU', INCONNU: 'SANS ÉTAT' };
@@ -244,7 +245,7 @@ function jauge(j) {
    portraits/<id>-mini.jpg (160 px, la liste). Un agent sans portrait, ou dont l'image ne charge pas
    (hors ligne, pas encore en cache), garde l'ancienne pastille a deux lettres. */
 const PORTRAITS = new Set(['agent-office', 'analyste', 'archiviste', 'banc', 'canari', 'cenacle', 'chroniqueur',
-  'concierge', 'diagnostiqueur', 'eclaireur', 'gardien', 'guetteur', 'heraut', 'metronome', 'notaire', 'passerelle',
+  'concierge', 'diagnostiqueur', 'eclaireur', 'gardien', 'guetteur', 'heraut', 'intendant', 'metronome', 'notaire', 'passerelle',
   'passeur', 'plume', 'quotas', 'relais', 'relaischatgpt', 'relecteur', 'scribe', 'sentinelle', 'sources', 'tisseur',
   'trieur', 'veilleur', 'vigie', 'vigile', 'vitrines']);
 
