@@ -55,6 +55,7 @@ const SIG = {
   // 2026-10-29 : agents construits depuis le 26.10, memes sigles qu'ODIN (REAL_META de odin.js).
   notaire: 'NO', vigile: 'VV', canari: 'CN', vitrines: 'GV', sources: 'SR', tisseur: 'TS',
   intendant: 'IN',   // 2026-11-06 : Agent 33
+  portier: 'PO',     // 2026-11-08 : Agent 34
 };
 const sig = a => SIG[a.id] || String(a.nom || '?').slice(0, 2).toUpperCase();
 const LIB_VERDICT = { SAIN: 'SAIN', ATTENTION: 'ATTENTION', ALERTE: 'ALERTE', PAUSE: 'EN PAUSE', VU: 'VU', INCONNU: 'SANS ÉTAT' };
@@ -246,7 +247,7 @@ function jauge(j) {
    (hors ligne, pas encore en cache), garde l'ancienne pastille a deux lettres. */
 const PORTRAITS = new Set(['agent-office', 'analyste', 'archiviste', 'banc', 'canari', 'cenacle', 'chroniqueur',
   'concierge', 'diagnostiqueur', 'eclaireur', 'gardien', 'guetteur', 'heraut', 'intendant', 'metronome', 'notaire', 'passerelle',
-  'passeur', 'plume', 'quotas', 'relais', 'relaischatgpt', 'relecteur', 'scribe', 'sentinelle', 'sources', 'tisseur',
+  'passeur', 'plume', 'portier', 'quotas', 'relais', 'relaischatgpt', 'relecteur', 'scribe', 'sentinelle', 'sources', 'tisseur',
   'trieur', 'veilleur', 'vigie', 'vigile', 'vitrines']);
 
 /** La pastille a lettres (ancien avatar, et repli quand le portrait manque). */
