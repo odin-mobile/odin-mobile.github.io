@@ -56,15 +56,23 @@ const SIG = {
   notaire: 'NO', vigile: 'VV', canari: 'CN', vitrines: 'GV', sources: 'SR', tisseur: 'TS',
   intendant: 'IN',   // 2026-11-06 : Agent 33
   portier: 'PO',     // 2026-11-08 : Agent 34
+  // 2026-11-19 (ODIN 5.10) : agents 35 a 38 et les 3 agents de la Fabrique, memes sigles qu'ODIN.
+  fabrique: 'FA', inspecteur: 'IS', greffier: 'GR', cartographe: 'CA',
+  fab_synthese_monetisation: 'SM', fab_cap_semaine: 'CS', fab_bilan_vendredi: 'BV',
 };
 const sig = a => SIG[a.id] || String(a.nom || '?').slice(0, 2).toUpperCase();
 const LIB_VERDICT = { SAIN: 'SAIN', ATTENTION: 'ATTENTION', ALERTE: 'ALERTE', PAUSE: 'EN PAUSE', VU: 'VU', INCONNU: 'SANS ÉTAT' };
 const libVerdict = v => LIB_VERDICT[v] || 'SANS ÉTAT';
 const verdictSur = v => (LIB_VERDICT[v] ? v : 'INCONNU');
-const LIB_RYTHME = { horaire: 'planifié', declenche: 'déclenché par le Métronome', sur_demande: 'sur demande', direct: 'en direct' };
-/* Agent Office (numero 0) : le pont Claude Code, pas un « Agent N » ; pas de ronde, allume ou eteint. */
-const estPont = a => a.numero === 0;
-const libNumero = a => (estPont(a) ? 'pont' : `n°${a.numero}`);
+const LIB_RYTHME = { horaire: 'planifié', declenche: 'déclenché par le Métronome', sur_demande: 'sur demande', direct: 'en direct',
+                     fabrique: 'chaque semaine, via la Fabrique' };
+/* Agent Office (numero 0) : le pont Claude Code, pas un « Agent N » ; pas de ronde, allume ou eteint.
+   2026-11-19 (ODIN 5.10) : les agents de la Fabrique (id « fab_… ») ont aussi le numero 0, sans etre le pont. */
+const estFab = a => String(a?.id || '').startsWith('fab_');
+const estPont = a => a.numero === 0 && !estFab(a);
+const libNumero = a => (estPont(a) ? 'pont' : estFab(a) ? '' : `n°${a.numero}`);   // Fabrique : le rythme le dit deja
+/** L'etiquette courte en majuscules (signaux du briefing, scenes 3D). */
+const teteNumero = a => (estPont(a) ? 'PONT' : estFab(a) ? 'FABRIQUE' : `N°${a.numero}`);
 const libPont = a => (a.verdict === 'PAUSE' ? 'éteint sur le PC · s’ouvre à la demande' : 'allumé sur le PC');
 const GRAVE = new Set(['ALERTE', 'ATTENTION']);
 const coulVerdict = v => `var(--v-${verdictSur(v).toLowerCase()})`;
@@ -156,7 +164,7 @@ function afficher(depuisCache) {
     scenes = creerScenes($('scene'), $('scene-lecture'), { ouvrirAgent: ouvrirFiche });
     scenes.theme(document.documentElement.dataset.theme);
   }
-  scenes.charger(E, { sig, libVerdict });
+  scenes.charger(E, { sig, libVerdict, teteNumero });
   allerA(memoire.lire(CLE_VUE) || 'command', false);
 }
 
@@ -191,7 +199,7 @@ function rendreCommand() {
     const a = E.agents.find(x => x.id === t.id) || t;
     const btn = el('button', 'signal');
     const tete = el('div', 'signal-tete');
-    tete.append(el('span', null, `N°${t.numero} · ${String(t.nom).toUpperCase()}`),
+    tete.append(el('span', null, `${teteNumero(t)} · ${String(t.nom).toUpperCase()}`),
       el('span', `pastille v-${verdictSur(t.verdict)}`, libVerdict(t.verdict)));
     btn.append(tete, el('div', 'signal-texte', (a.alertes && a.alertes[0]) || 'Voir la fiche de l’agent'));
     btn.addEventListener('click', () => ouvrirFiche(t.id));
@@ -248,7 +256,9 @@ function jauge(j) {
 const PORTRAITS = new Set(['agent-office', 'analyste', 'archiviste', 'banc', 'canari', 'cenacle', 'chroniqueur',
   'concierge', 'diagnostiqueur', 'eclaireur', 'gardien', 'guetteur', 'heraut', 'intendant', 'metronome', 'notaire', 'passerelle',
   'passeur', 'plume', 'portier', 'quotas', 'relais', 'relaischatgpt', 'relecteur', 'scribe', 'sentinelle', 'sources', 'tisseur',
-  'trieur', 'veilleur', 'vigie', 'vigile', 'vitrines']);
+  'trieur', 'veilleur', 'vigie', 'vigile', 'vitrines',
+  // 2026-11-19 (ODIN 5.10) : agents 35 a 38 et les 3 agents de la Fabrique.
+  'fabrique', 'inspecteur', 'greffier', 'cartographe', 'fab_synthese_monetisation', 'fab_cap_semaine', 'fab_bilan_vendredi']);
 
 /** La pastille a lettres (ancien avatar, et repli quand le portrait manque). */
 function pastilleLettres(a, v, grand) {
@@ -834,7 +844,7 @@ function ouvrirFiche(id) {
     }
   } else { pt.replaceChildren(); delete pt.dataset.cle; }
   $('fi-nom').textContent = a.nom;
-  $('fi-sous').textContent = `${estPont(a) ? 'PONT CLAUDE CODE' : `AGENT N°${a.numero}`} · ${libVerdict(v)}`;
+  $('fi-sous').textContent = `${estPont(a) ? 'PONT CLAUDE CODE' : estFab(a) ? 'AGENT DE LA FABRIQUE' : `AGENT N°${a.numero}`} · ${libVerdict(v)}`;
   $('fi-desc').textContent = a.desc || '';
   $('fi-desc').hidden = !a.desc;
   $('fi-ronde').textContent = estPont(a) ? libPont(a) : a.ronde ? dateCourte(a.ronde) : 'jamais';

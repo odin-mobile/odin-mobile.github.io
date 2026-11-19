@@ -173,7 +173,7 @@ export function creerScenes(canvas, lecture, { ouvrirAgent }) {
         const r = orbe(p, GRAVE.has(a.verdict) ? 8.5 : a.ia ? 7.2 : 6, col);
         ctx.textAlign = 'center'; etiquette(cache.sig(a), p.x, p.y + r + 12, COUL.ink1, 10);
         cibles.push({ x: p.x, y: p.y, r: r + 12, agent: a,
-                      texte: `N°${a.numero} · ${a.nom} — ${cache.libVerdict(a.verdict)}` });
+                      texte: `${cache.teteNumero ? cache.teteNumero(a) : `N°${a.numero}`} · ${a.nom} — ${cache.libVerdict(a.verdict)}` });
       } });
     });
     file.sort((x, y) => y.prof - x.prof).forEach(o => o.dessin());
@@ -257,7 +257,7 @@ export function creerScenes(canvas, lecture, { ouvrirAgent }) {
         }
         ctx.textAlign = 'center'; etiquette(cache.sig(a), p.x, p.y - r - 5, COUL.ink1, 9);
         cibles.push({ x: p.x, y: p.y, r: r + 12, agent: a,
-                      texte: `N°${a.numero} · ${a.nom} — ${cache.libVerdict(a.verdict)}` });
+                      texte: `${cache.teteNumero ? cache.teteNumero(a) : `N°${a.numero}`} · ${a.nom} — ${cache.libVerdict(a.verdict)}` });
       } });
     });
     file.sort((x, y) => y.prof - x.prof).forEach(o => o.dessin());
