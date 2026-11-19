@@ -176,8 +176,9 @@ function rendreCommand() {
   v.className = `pastille v-${verdictSur(br.verdict)}`;
   v.textContent = libVerdict(br.verdict);
   const r = $('br-resume');
-  r.replaceChildren(el('b', null, `${c.agents} agents`), ` en service · `,
-    el('b', null, `${c.attention + c.alertes} à traiter`), ` · ${c.pause} en pause · ${c.avec_ia} avec IA · `,
+  // 5.10 : mêmes mots et mêmes chiffres que l'écran Agents d'ODIN (total, en service, en pause).
+  r.replaceChildren(el('b', null, `${c.agents} agents`), ` · ${c.agents - c.pause} en service · ${c.pause} en pause · `,
+    el('b', null, `${c.attention + c.alertes} à traiter`), ` · ${c.avec_ia} avec IA · `,
     el('b', null, `${E.synthese.stats.projets} projets`), ' suivis.');
   // Le titre du ton du jour et la phrase qui suit, sans couper une phrase.
   let premiere = '';
@@ -937,7 +938,11 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (avait && !recharge) { recharge = true; location.reload(); }
   });
-  navigator.serviceWorker.register('sw.js').then(r => r.update()).catch(() => { /* sans cache : l'appli marche en ligne */ });
+  navigator.serviceWorker.register('sw.js').then(r => {
+    r.update();
+    // 5.10 : une appli restée ouverte en arrière-plan ne se relançait jamais, donc ne voyait jamais la nouvelle version.
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) r.update().catch(() => {}); });
+  }).catch(() => { /* sans cache : l'appli marche en ligne */ });
 }
 (async () => {
   try { await document.fonts?.ready; } catch { /* polices de secours */ }
