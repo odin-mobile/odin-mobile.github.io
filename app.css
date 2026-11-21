@@ -549,3 +549,99 @@ button { font: inherit; color: inherit; }
 .actualiser.tourne { animation: tourne 1.2s linear infinite; }
 @keyframes tourne { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .actualiser.tourne { animation: none; } }
+
+/* ═════════ MODÈLES (ODIN 5.13, 2026-11-21) : quel modèle pour ma tâche ? ═════════
+   Mêmes jetons et mêmes composants que le reste de l'appli (plaque, filtre, pastille, fiche).
+   --md-* : couleurs de TEXTE vérifiées au contraste dans les trois thèmes (le clair a ses teintes foncées). */
+:root { --md-ok: var(--c-seal); --md-warn: var(--c-a4); --md-lien: var(--c-beam); }
+[data-theme="white"] { --md-ok: #047857; --md-warn: #b45309; --md-lien: #075985; }
+
+.nav-bas { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+@media (max-width: 420px) { .nav-btn { font-size: 9.5px; letter-spacing: 0; } #nav-nb { display: none; } }
+
+.md-raccourci { display: flex; flex-direction: column; gap: 4px; width: 100%; min-height: 44px; text-align: left; cursor: pointer; font: inherit; color: var(--ink-1); }
+.md-raccourci-t { font-family: var(--ff-hero); font-weight: 700; font-size: 16px; letter-spacing: .06em; color: var(--md-lien); }
+.md-raccourci:focus-visible { outline: 2px solid var(--c-beam-hi); outline-offset: 2px; }
+
+.md-corps { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.md-bandeau { display: grid; gap: 4px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--edge); background: var(--plate-well); font-size: 13px; color: var(--ink-1); }
+.md-bandeau-date { font-family: var(--ff-mono); font-size: 12px; color: var(--ink-2); }
+.md-bandeau.ancien, .md-bandeau.hors-ligne { border-color: var(--c-a4); background: var(--bandeau-fond); color: var(--bandeau-ink); }
+.md-bandeau.ancien .md-bandeau-date, .md-bandeau.hors-ligne .md-bandeau-date { color: var(--bandeau-ink); }
+.md-vide { font-size: 14px; color: var(--ink-2); }
+
+.md-pills { margin-bottom: 8px; }
+.md-plus > summary { list-style: none; display: inline-flex; align-items: center; }
+.md-plus > summary::-webkit-details-marker { display: none; }
+.md-plus-t::after { content: "\00a0▾"; }
+.md-plus[open] > .md-plus-t::after { content: "\00a0▴"; }
+.md-plus-liste { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.md-aide, .md-note { font-size: 12.5px; line-height: 1.4; color: var(--ink-2); margin: 6px 0; }
+.md-note:empty { display: none; }
+.md-note.attention { color: var(--c-flag-hi); }
+
+/* Le tableau : nom du modèle fixe à gauche, défilement horizontal */
+/* position: relative : les textes du lecteur d'écran (.vh, en absolu) restent DANS le cadre défilant (sinon la page s'élargit) */
+.md-tableau-zone { position: relative; overflow-x: auto; margin: 4px -14px 0; padding-bottom: 4px; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+.md-tableau-zone:focus-visible { outline: 2px solid var(--c-beam-hi); outline-offset: -2px; }
+.md-table { border-collapse: separate; border-spacing: 0; min-width: 100%; font-size: 13px; }
+.md-table th, .md-table td { padding: 8px; border-bottom: 1px solid var(--trait-faible); vertical-align: top; text-align: left; }
+.md-coin, .md-nom { position: sticky; left: 0; z-index: 2; background: var(--c-hull); }
+.md-coin { z-index: 3; font-family: var(--ff-mono); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); vertical-align: bottom !important; }
+.md-nom { min-width: 108px; max-width: 128px; font-weight: 600; color: var(--ink-1); border-left: 3px solid var(--ink-3); box-shadow: 1px 0 0 var(--edge); }
+.md-nom.lab-claude { border-left-color: var(--ia-claude); } .md-nom.lab-gemini { border-left-color: var(--ia-gemini); } .md-nom.lab-chatgpt { border-left-color: var(--ia-chatgpt); }
+.md-nom-t { display: block; line-height: 1.25; overflow-wrap: anywhere; }
+.md-table th.md-col { min-width: 104px; padding: 4px; }
+.md-col-b { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; width: 100%; min-height: 44px; padding: 6px 8px; border-radius: 10px; cursor: pointer; border: 1px solid rgba(var(--rgb-a2), .45); background: var(--bg-pill); }
+.md-col-b:focus-visible { outline: 2px solid var(--c-beam-hi); outline-offset: 1px; }
+.md-col-n { font-size: 12.5px; font-weight: 600; line-height: 1.2; color: var(--md-lien); text-decoration: underline dotted; text-underline-offset: 3px; }
+.md-col-u { font-size: 10.5px; color: var(--ink-2); }
+.md-tag { display: inline-block; width: fit-content; margin-top: 3px; padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor; font-family: var(--ff-mono); font-size: 10px; font-weight: 600; letter-spacing: .05em; }
+.md-tag.plafond { color: var(--md-warn); }
+.md-tag.nouveau { color: var(--md-ok); }
+.md-case { min-width: 96px; color: var(--ink-1); }
+.md-v b, .md-edi-v { font-family: var(--ff-mono); font-weight: 600; }
+.md-v b { font-size: 13.5px; }
+.md-case.premier { background: color-mix(in srgb, var(--md-ok) 15%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--md-ok) 65%, transparent); }
+.md-case.egal { background: color-mix(in srgb, var(--md-ok) 7%, transparent); }
+.md-case.premier .md-rang, .md-case.egal .md-rang { color: var(--md-ok); font-weight: 600; }
+.md-rang, .md-sous { display: block; margin-top: 2px; font-size: 11px; color: var(--ink-2); }
+.md-vide-t { display: block; font-size: 11.5px; line-height: 1.3; font-style: italic; color: var(--ink-2); }
+.md-edi { font-size: 11px; color: var(--ink-2); }
+.md-edi-v { font-size: 11.5px; }
+.md-case .md-edi { display: block; margin-top: 3px; white-space: nowrap; }
+.md-nat { font-size: 12px; }
+.nat-i { color: var(--md-ok); } .nat-h { color: var(--md-lien); } .nat-e { color: var(--md-warn); } .nat-g { color: var(--ink-3); }
+.md-legende { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 11px; color: var(--ink-2); }
+
+/* Les raccourcis */
+.md-cartes { display: grid; gap: 10px; }
+.md-cartes .plaque-tete { margin-bottom: 0; }
+.md-carte { padding: 12px; border-radius: 12px; background: var(--plate-well); border: 1px solid var(--edge); }
+.md-carte-et { font-family: var(--ff-mono); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--c-flag-hi); }
+.md-carte-m { margin: 2px 0 6px; font-size: 18px; font-weight: 700; color: var(--ink-1); }
+.md-carte-r { display: grid; gap: 4px; margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.4; color: var(--ink-2); }
+.md-carte-r b { color: var(--ink-1); font-weight: 600; }
+.md-carte-eg { margin-top: 4px; font-size: 12.5px; color: var(--ink-2); }
+.md-carte-cout { margin-top: 6px; font-size: 12.5px; color: var(--md-lien); }
+
+/* Nouveautés peu mesurées */
+.md-nv { margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: var(--plate-well); border: 1px solid color-mix(in srgb, var(--md-ok) 45%, transparent); }
+.md-nv-n { font-size: 16px; font-weight: 700; } .md-nv-ds { font-size: 11.5px; color: var(--ink-2); }
+.md-nv-l { display: grid; gap: 5px; margin: 6px 0 0; padding: 0; list-style: none; font-size: 13px; line-height: 1.35; }
+.md-nv-b { color: var(--ink-2); }
+.md-nv-l .md-rang { display: inline; }
+.md-nv-vide { font-size: 12.5px; font-style: italic; color: var(--ink-2); }
+.md-niv { font-size: 11px; color: var(--ink-2); }
+
+/* Comprendre les benchmarks + la feuille */
+.md-gl-l { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.md-gl-b { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 0 12px; border-radius: 12px; background: var(--plate-well); border: 1px solid rgba(var(--rgb-a2), .4); color: var(--ink-1); font-size: 14px; cursor: pointer; }
+.md-gl-b:focus-visible { outline: 2px solid var(--c-beam-hi); outline-offset: 2px; }
+.md-gl-fl { margin-left: auto; font-size: 18px; color: var(--ink-2); }
+.fb-corps { display: grid; gap: 10px; margin-top: 12px; }
+.fb-bloc { padding: 10px 12px; border-radius: 12px; background: var(--plate-well); border: 1px solid rgba(var(--rgb-a2), .35); }
+.fb-bloc p { margin: 4px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--ink-1); }
+[data-theme="tokyo"] .md-carte, [data-theme="tokyo"] .md-nv, [data-theme="tokyo"] .md-col-b, [data-theme="tokyo"] .md-gl-b,
+[data-theme="tokyo"] .md-bandeau, [data-theme="tokyo"] .fb-bloc, [data-theme="tokyo"] .md-raccourci { border-radius: 0; }
+[data-theme="tokyo"] .md-raccourci { clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); border-left: 3px solid var(--c-beam); }

@@ -15,6 +15,7 @@ import { dechiffrer, PhraseIncorrecte } from './crypto-odin.js';
 import { envoyerOrdre, envoyerRonde, numero } from './ordre-odin.js';
 import { creerScenes } from './scenes.js';
 import { POLES } from './chambre-poles.js';
+import { rendreModeles } from './modeles.js';
 
 const CLE_PHRASE = 'odin-mobile.phrase';
 const CLE_VUE = 'odin-mobile.vue';
@@ -27,7 +28,7 @@ const CLE_REPONSES = 'odin-mobile.ordres-reponses'; // leur sort (refus du PC co
 // Memes ages maximum que le PC : pause 2 h, reprise 24 h (2026-10-30), decision de Relais 7 jours.
 const GARDE_ORDRE_MS = { pause: 2 * 3600 * 1000, reprise: 24 * 3600 * 1000, relais: CASE_GARDE_MS };
 const garde = o => GARDE_ORDRE_MS[o.ordre === 'pause' && o.actif ? 'reprise' : o.ordre] || 0;
-const VUES = ['command', 'agents', 'nexus', 'synthese', 'skills'];
+const VUES = ['command', 'agents', 'nexus', 'synthese', 'skills', 'modeles'];
 const ANCIEN_MS = 2 * 3600 * 1000;
 const $ = id => document.getElementById(id);
 
@@ -59,6 +60,7 @@ const SIG = {
   // 2026-11-19 (ODIN 5.10) : agents 35 a 38 et les 3 agents de la Fabrique, memes sigles qu'ODIN.
   fabrique: 'FA', inspecteur: 'IS', greffier: 'GR', cartographe: 'CA',
   fab_synthese_monetisation: 'SM', fab_cap_semaine: 'CS', fab_bilan_vendredi: 'BV',
+  observatoire: 'OB',   // 2026-11-21 (ODIN 5.13) : Agent 39, meme sigle qu'ODIN
 };
 const sig = a => SIG[a.id] || String(a.nom || '?').slice(0, 2).toUpperCase();
 const LIB_VERDICT = { SAIN: 'SAIN', ATTENTION: 'ATTENTION', ALERTE: 'ALERTE', PAUSE: 'EN PAUSE', VU: 'VU', INCONNU: 'SANS ÉTAT' };
@@ -116,6 +118,34 @@ async function chargerPaquet() {
   return { paquet: await r.json(), depuisCache: r.headers.get('x-odin-cache') === '1' };
 }
 
+/* ═════════ Benchmarks (5.13) : second fichier chiffre, meme phrase, charge APRES l'affichage de l'etat ═════════
+   Le service worker le sert comme l'etat (reseau d'abord, dernier recu hors ligne, en-tete x-odin-cache). */
+let MD = { M: null, horsLigne: false, chargement: false, erreur: '' };
+let mdCharge = false;
+async function chargerModeles() {
+  const phrase = memoire.lire(CLE_PHRASE);
+  if (!phrase || MD.chargement) return;
+  MD = { ...MD, chargement: true, erreur: '' };
+  if (!MD.M) rendreVueModeles();
+  try {
+    const r = await fetch('modeles.chiffre.json', { cache: 'no-cache', credentials: 'omit' });
+    if (r.status === 404) {
+      MD = { M: null, horsLigne: false, chargement: false, erreur: '' };
+    } else {
+      if (!r.ok) throw new Error(`benchmarks introuvables (${r.status})`);
+      const M = await dechiffrer(await r.json(), phrase);
+      MD = { M, horsLigne: r.headers.get('x-odin-cache') === '1' || !navigator.onLine, chargement: false, erreur: '' };
+    }
+    mdCharge = true;
+  } catch (err) {
+    MD = { ...MD, chargement: false,
+           erreur: MD.M ? '' : err instanceof TypeError ? 'Hors ligne et aucun relevé de benchmarks en mémoire : ouvre l’appli une fois avec du réseau.'
+             : `Benchmarks illisibles : ${err.message}` };
+  }
+  rendreVueModeles();
+}
+function rendreVueModeles() { rendreModeles($('vue-modeles'), MD, memoire); }
+
 async function ouvrir(phrase, { nouvelle = false } = {}) {
   const msg = $('verrou-msg');
   msg.className = 'verrou-msg ok';
@@ -157,7 +187,8 @@ function afficher(depuisCache) {
   b.textContent = `État ancien : ODIN n’a rien publié de nouveau depuis ${depuis(E.genere).replace('il y a ', '')}. Le PC est peut-être éteint.`;
   resoudreCases();
   resoudreOrdres();
-  rendreCommand(); rendreAgents(); rendreNexus(); rendreSynthese(); rendreSkills();
+  rendreCommand(); rendreAgents(); rendreNexus(); rendreSynthese(); rendreSkills(); rendreVueModeles();
+  if (!mdCharge) setTimeout(chargerModeles, 400);   // apres le premier affichage : l'ouverture n'attend pas
   renvoyerCases();
   renvoyerOrdres();
   if (!scenes) {
@@ -259,7 +290,8 @@ const PORTRAITS = new Set(['agent-office', 'analyste', 'archiviste', 'banc', 'ca
   'passeur', 'plume', 'portier', 'quotas', 'relais', 'relaischatgpt', 'relecteur', 'scribe', 'sentinelle', 'sources', 'tisseur',
   'trieur', 'veilleur', 'vigie', 'vigile', 'vitrines',
   // 2026-11-19 (ODIN 5.10) : agents 35 a 38 et les 3 agents de la Fabrique.
-  'fabrique', 'inspecteur', 'greffier', 'cartographe', 'fab_synthese_monetisation', 'fab_cap_semaine', 'fab_bilan_vendredi']);
+  'fabrique', 'inspecteur', 'greffier', 'cartographe', 'fab_synthese_monetisation', 'fab_cap_semaine', 'fab_bilan_vendredi',
+  'observatoire']);   // 2026-11-21 (ODIN 5.13) : Agent 39
 
 /** La pastille a lettres (ancien avatar, et repli quand le portrait manque). */
 function pastilleLettres(a, v, grand) {
@@ -594,6 +626,7 @@ $('actualiser').addEventListener('click', async () => {
   if (b.disabled) return;
   b.disabled = true;
   b.classList.add('tourne');
+  mdCharge = false;                                  // 5.13 : relit aussi les benchmarks
   await rafraichir();
   const phrase = memoire.lire(CLE_PHRASE);
   const p = E?.agents.find(a => a.id === 'passerelle');
@@ -875,6 +908,9 @@ function allerA(vue, defiler = true) {
   if (defiler) window.scrollTo(0, 0);
 }
 document.querySelectorAll('.nav-btn').forEach(b => b.addEventListener('click', () => allerA(b.dataset.vue)));
+$('cmd-modeles').addEventListener('click', () => allerA('modeles'));   // 5.13 : la discipline, depuis Command
+$('fb-fermer').addEventListener('click', () => $('feuille-bench').close());
+$('feuille-bench').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
 document.querySelectorAll('.filtre[data-filtre]').forEach(b => b.addEventListener('click', () => {
   filtre = b.dataset.filtre;
   document.querySelectorAll('.filtre[data-filtre]').forEach(x => {

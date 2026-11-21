@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<!-- Lecture seule par construction : aucune source externe, un seul fichier de donnees (etat.chiffre.json). -->
+<!-- Lecture seule par construction : aucune source externe, deux fichiers de donnees chiffres (etat.chiffre.json et, 5.13, modeles.chiffre.json). -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://ntfy.sh; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#090016">
@@ -67,6 +67,12 @@
         <p id="br-resume" class="resume"></p>
         <p id="br-news" class="news-courte"></p>
       </div>
+
+      <!-- 5.13 : la discipline « avant une tache en IA » -->
+      <button id="cmd-modeles" class="plaque md-raccourci" type="button">
+        <span class="plaque-titre">Avant une tâche en IA</span>
+        <span class="md-raccourci-t">Quel modèle pour ma tâche ? <span aria-hidden="true">→</span></span>
+      </button>
 
       <div class="scene-carte">
         <div class="scene-onglets" role="tablist" aria-label="Vue 3D">
@@ -169,6 +175,13 @@
         <p class="mono pied-note">ODIN Mobile · lecture seule · aucune clé d'IA · polices Saira, Orbitron, IBM Plex Mono (licence OFL)</p>
       </div>
     </section>
+    <!-- ═════ ÉCRAN 6 : MODÈLES (5.13, 2026-11-21) — quel modèle pour ma tâche ? ═════ -->
+    <section id="vue-modeles" class="vue" hidden aria-labelledby="t-modeles">
+      <h2 id="t-modeles" class="titre-ecran">MODÈLES</h2>
+      <p class="sous-ecran mono">Quel modèle pour ma tâche ? · valeurs brutes, aucune note cachée</p>
+      <div id="md-bandeau" class="md-bandeau" role="status" hidden></div>
+      <div id="md-corps" class="md-corps"></div>
+    </section>
   </main>
 
   <nav class="nav-bas" aria-label="Écrans">
@@ -177,6 +190,7 @@
     <button class="nav-btn" data-vue="nexus">NEXUS</button>
     <button class="nav-btn" data-vue="synthese">VAULT</button>
     <button class="nav-btn" data-vue="skills">SKILLS</button>
+    <button class="nav-btn" data-vue="modeles">MODÈLES</button>
   </nav>
 </div>
 
@@ -215,6 +229,18 @@
     <p class="mono fiche-note">Ta décision est seulement enregistrée : rien n’est appliqué. Claude relit, teste puis applique (accord) ou range (refus) à la prochaine session.</p>
     <ul id="fi-relais-liste" class="relais-liste"></ul>
   </div>
+</dialog>
+
+<!-- ═══════════ FEUILLE « CE QUE CE BENCHMARK COMPARE » (5.13) ═══════════ -->
+<dialog id="feuille-bench" class="fiche feuille-bench" aria-labelledby="fb-nom">
+  <div class="fiche-tete">
+    <div class="fiche-noms">
+      <div id="fb-nom" class="fiche-nom"></div>
+      <div id="fb-sous" class="mono fiche-sous"></div>
+    </div>
+    <button id="fb-fermer" class="fermer" aria-label="Fermer">✕</button>
+  </div>
+  <div id="fb-corps" class="fb-corps"></div>
 </dialog>
 
 </body>

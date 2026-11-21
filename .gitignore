@@ -9,9 +9,11 @@
 !crypto-odin.js
 !ordre-odin.js
 !chambre-poles.js
+!modeles.js
 !sw.js
 !manifest.webmanifest
 !etat.chiffre.json
+!modeles.chiffre.json
 !README.md
 !icons/
 !icons/*

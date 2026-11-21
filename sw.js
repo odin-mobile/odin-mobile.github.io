@@ -5,20 +5,23 @@
      (marque d'un en-tete x-odin-cache: 1 pour que l'appli affiche « HORS LIGNE »).
    Seule exception, hors service worker : les ordres chiffres (ronde, case, pause, relais : ordre-odin.js, POST ntfy.sh).
    ══════════════════════════════════════════════════════════════ */
-const VERSION = 'odin-mobile-v18';  // v18 : totaux identiques à ODIN, mise à jour au retour sur l'appli ; v17 : agents 35 a 38 et agents de la Fabrique (sigles, portraits, libelles) ; v16 : Agent 34 Le Portier (sigle, portrait) ; v15 : Agent 33 Intendant (sigle, portrait) ; v14 : installation avec fichiers frais (jamais le cache du navigateur) ; v13 : portrait de la fiche agent réduit ~17 % ; v12 : portraits des agents et rubriques par pole ; v11 : reprise valable 24 h ; v10 : pause/reprise et decisions de Relais, sigles des agents 27 a 32 (v9 : cout par agent (v8 : cases a cocher et Actualiser, v7 : lancer une ronde, v6 : Agent Office, v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
-const COQUILLE = ['./', 'index.html', 'app.css', 'app.js', 'theme.js', 'scenes.js', 'crypto-odin.js', 'ordre-odin.js', 'chambre-poles.js',
+const VERSION = 'odin-mobile-v19';  // v19 : vue « Modèles » (benchmarks de l'Observatoire, modeles.chiffre.json), Agent 39 L'Observatoire (sigle, portrait) ; v18 : totaux identiques à ODIN, mise à jour au retour sur l'appli ; v17 : agents 35 a 38 et agents de la Fabrique (sigles, portraits, libelles) ; v16 : Agent 34 Le Portier (sigle, portrait) ; v15 : Agent 33 Intendant (sigle, portrait) ; v14 : installation avec fichiers frais (jamais le cache du navigateur) ; v13 : portrait de la fiche agent réduit ~17 % ; v12 : portraits des agents et rubriques par pole ; v11 : reprise valable 24 h ; v10 : pause/reprise et decisions de Relais, sigles des agents 27 a 32 (v9 : cout par agent (v8 : cases a cocher et Actualiser, v7 : lancer une ronde, v6 : Agent Office, v5 : Tokyo Night City, v4 : descriptions, v3 : themes)
+const COQUILLE = ['./', 'index.html', 'app.css', 'app.js', 'theme.js', 'scenes.js', 'crypto-odin.js', 'ordre-odin.js', 'chambre-poles.js', 'modeles.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/saira.woff2', 'fonts/orbitron.woff2', 'fonts/plex-mono-400.woff2', 'fonts/plex-mono-500.woff2', 'fonts/plex-mono-600.woff2'];
 // Portraits (miniatures) : au mieux, un echec n'empeche pas l'installation de l'appli.
-const MINIS = ['portraits/agent-office-mini.jpg', 'portraits/analyste-mini.jpg', 'portraits/archiviste-mini.jpg', 'portraits/banc-mini.jpg', 'portraits/canari-mini.jpg', 'portraits/cartographe-mini.jpg', 'portraits/cenacle-mini.jpg', 'portraits/chroniqueur-mini.jpg', 'portraits/concierge-mini.jpg', 'portraits/diagnostiqueur-mini.jpg', 'portraits/eclaireur-mini.jpg', 'portraits/fab_bilan_vendredi-mini.jpg', 'portraits/fab_cap_semaine-mini.jpg', 'portraits/fab_synthese_monetisation-mini.jpg', 'portraits/fabrique-mini.jpg', 'portraits/gardien-mini.jpg', 'portraits/greffier-mini.jpg', 'portraits/guetteur-mini.jpg', 'portraits/heraut-mini.jpg', 'portraits/inspecteur-mini.jpg', 'portraits/intendant-mini.jpg', 'portraits/metronome-mini.jpg', 'portraits/notaire-mini.jpg', 'portraits/passerelle-mini.jpg', 'portraits/passeur-mini.jpg', 'portraits/plume-mini.jpg', 'portraits/portier-mini.jpg', 'portraits/quotas-mini.jpg', 'portraits/relais-mini.jpg', 'portraits/relaischatgpt-mini.jpg', 'portraits/relecteur-mini.jpg', 'portraits/scribe-mini.jpg', 'portraits/sentinelle-mini.jpg', 'portraits/sources-mini.jpg', 'portraits/tisseur-mini.jpg', 'portraits/trieur-mini.jpg', 'portraits/veilleur-mini.jpg', 'portraits/vigie-mini.jpg', 'portraits/vigile-mini.jpg', 'portraits/vitrines-mini.jpg'];
+const MINIS = ['portraits/agent-office-mini.jpg', 'portraits/analyste-mini.jpg', 'portraits/archiviste-mini.jpg', 'portraits/banc-mini.jpg', 'portraits/canari-mini.jpg', 'portraits/cartographe-mini.jpg', 'portraits/cenacle-mini.jpg', 'portraits/chroniqueur-mini.jpg', 'portraits/concierge-mini.jpg', 'portraits/diagnostiqueur-mini.jpg', 'portraits/eclaireur-mini.jpg', 'portraits/fab_bilan_vendredi-mini.jpg', 'portraits/fab_cap_semaine-mini.jpg', 'portraits/fab_synthese_monetisation-mini.jpg', 'portraits/fabrique-mini.jpg', 'portraits/gardien-mini.jpg', 'portraits/greffier-mini.jpg', 'portraits/guetteur-mini.jpg', 'portraits/heraut-mini.jpg', 'portraits/inspecteur-mini.jpg', 'portraits/intendant-mini.jpg', 'portraits/metronome-mini.jpg', 'portraits/notaire-mini.jpg', 'portraits/observatoire-mini.jpg', 'portraits/passerelle-mini.jpg', 'portraits/passeur-mini.jpg', 'portraits/plume-mini.jpg', 'portraits/portier-mini.jpg', 'portraits/quotas-mini.jpg', 'portraits/relais-mini.jpg', 'portraits/relaischatgpt-mini.jpg', 'portraits/relecteur-mini.jpg', 'portraits/scribe-mini.jpg', 'portraits/sentinelle-mini.jpg', 'portraits/sources-mini.jpg', 'portraits/tisseur-mini.jpg', 'portraits/trieur-mini.jpg', 'portraits/veilleur-mini.jpg', 'portraits/vigie-mini.jpg', 'portraits/vigile-mini.jpg', 'portraits/vitrines-mini.jpg'];
 const ETAT = 'etat.chiffre.json';
+const MODELES = 'modeles.chiffre.json';     // 5.13 : les benchmarks, servis comme l'etat (dernier recu hors ligne)
+const DONNEES = [ETAT, MODELES];
 
 self.addEventListener('install', e => {
   // L'etat aussi, des la premiere visite : l'appli doit marcher hors ligne tout de suite (au mieux).
   e.waitUntil(caches.open(VERSION)
     // cache: 'reload' : sans lui, la nouvelle version pouvait reprendre l'ANCIEN app.css gardé 10 min par le
     // cache du navigateur (GitHub Pages), et le téléphone affichait l'ancien style malgré la mise à jour.
-    .then(c => c.addAll(COQUILLE.map(u => new Request(u, { cache: 'reload' }))).then(() => c.add(new Request(ETAT, { cache: 'no-store' })).catch(() => {}))
+    .then(c => c.addAll(COQUILLE.map(u => new Request(u, { cache: 'reload' })))
+      .then(() => Promise.all(DONNEES.map(d => c.add(new Request(d, { cache: 'no-store' })).catch(() => {}))))
       .then(() => Promise.all(MINIS.map(u => c.add(u).catch(() => {})))))
     .then(() => self.skipWaiting()));
 });
@@ -29,15 +32,16 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== self.location.origin) return;
-  if (url.pathname.endsWith('/' + ETAT)) {
+  const donnee = DONNEES.find(d => url.pathname.endsWith('/' + d));
+  if (donnee) {
     e.respondWith((async () => {
       const cache = await caches.open(VERSION);
       try {
         const r = await fetch(e.request, { cache: 'no-store' });
-        if (r.ok) await cache.put(ETAT, r.clone());
+        if (r.ok) await cache.put(donnee, r.clone());
         return r;
       } catch {
-        const vieux = await cache.match(ETAT);
+        const vieux = await cache.match(donnee);
         if (!vieux) throw new Error('hors ligne');
         const h = new Headers(vieux.headers); h.set('x-odin-cache', '1');
         return new Response(await vieux.blob(), { status: 200, headers: h });
