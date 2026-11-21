@@ -69,3 +69,25 @@ Polices : Saira, Orbitron, IBM Plex Mono — SIL Open Font License 1.1 (voir `fo
 2. Le bloc « Résultats à relire » liste chaque résultat : titre, moteur, date, nombre de lignes et de fichiers (jamais de code).
 3. Appuyer sur « Accord pour relecture » ou « Refus », puis encore une fois pour confirmer.
 4. Rien n'est appliqué : la décision est seulement enregistrée sur le PC. Claude la lit au début de la session suivante (accord : il relit, teste puis applique ; refus : il range le résultat).
+
+
+## Modèles : quel modèle pour ma tâche ? (2026-11-21, ODIN 5.13)
+
+Avant une tâche en IA, l'onglet **MODÈLES** (ou le bouton « Quel modèle pour ma tâche ? » de Command) montre les
+benchmarks relevés chaque semaine par l'Agent 39 « L'Observatoire », avec la même logique que l'écran Benchmarks d'ODIN.
+
+### 1. Lire l'écran
+1. En haut : « Relevé du … » ; au-delà de 10 jours, un bandeau orange « Relevé ancien » ; hors ligne, « dernière version reçue ».
+2. Choisir sa tâche : six pastilles (Coder, Agents qui pilotent un ordinateur, Raisonnement et science, Écrire et converser, Images et vidéo, Petit prix et gros volume) ; les autres et la vue d'ensemble sont sous « Plus de tâches ». Le choix est gardé.
+3. Le tableau : une ligne par modèle (nom fixe à gauche), une colonne par benchmark ; faire glisser vers la droite. Chaque case donne la valeur **brute** dans son unité, le niveau de raisonnement, le rang (« n° 1 » surligné, « = 1er » à égalité) et une pastille de nature : ● mesure indépendante, ◑ préférence humaine, ◐ annonce de l'éditeur (jamais classée). « non classé » : mesuré à un autre niveau que le protocole de référence. « au plafond » : la colonne ne départage plus. Jamais de note sur 100.
+4. Les raccourcis (Le meilleur, Meilleur rapport qualité/prix, Le moins cher correct) : calculés par l'Observatoire, chacun avec sa règle écrite et le coût d'une tâche type (10 000 jetons lus, 2 000 écrits).
+5. « Nouveautés peu mesurées » : les modèles de moins de 45 jours, chaque chiffre avec sa nature, et pourquoi une case est vide.
+6. Toucher le nom d'une colonne (ou une ligne de « Comprendre les benchmarks ») ouvre la fiche : ce qu'il compare, exemple, utile pour, limites, protocole de référence.
+
+### 2. D'où viennent les données
+- Un second fichier chiffré, `modeles.chiffre.json` (même phrase, même chiffrement que l'état), publié par la Passerelle **seulement quand le relevé change** (environ une fois par semaine). L'appli le lit après l'état, sans ralentir l'ouverture.
+- Hors ligne, le service worker (v19) garde la dernière version reçue, avec sa date.
+- Code : `modeles.js` (logique testée sous Node, affichage en `textContent` seulement).
+
+### 3. Tests (sur le PC, dossier `tests/`, non publié)
+`python -m unittest discover -s tests` : logique (`modeles-essai.mjs`) et navigateur (`navigateur.cjs --essais`, émulation téléphone, données d'essai chiffrées sur place avec une phrase d'essai). `node tests/navigateur.cjs --captures <dossier> --etat <clair> --modeles <clair>` fait les captures 390 × 844 dans les trois thèmes.
