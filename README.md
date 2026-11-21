@@ -71,6 +71,45 @@ Polices : Saira, Orbitron, IBM Plex Mono — SIL Open Font License 1.1 (voir `fo
 4. Rien n'est appliqué : la décision est seulement enregistrée sur le PC. Claude la lit au début de la session suivante (accord : il relit, teste puis applique ; refus : il range le résultat).
 
 
+## Portraits, pôles et fiche agent (2026-11-02)
+
+### 1. Portraits
+1. Les images sont dans le dossier `portraits/`, en deux tailles par agent : `<clé>.jpg` (720 px, pour la fiche) et `<clé>-mini.jpg` (160 px, pour la liste).
+2. Ce sont les mêmes images que sur ODIN (PC). Elles ne sont pas chiffrées : elles sont publiques sur le site, comme le reste de l'appli.
+3. Dans la liste, le portrait est rond, entouré d'un anneau et d'un point à la couleur du verdict. Un agent en pause est grisé.
+4. Si l'agent n'a pas de portrait, ou si l'image ne charge pas (hors ligne, pas encore en cache), l'ancienne pastille à deux lettres prend la place.
+5. Pour ajouter un agent :
+   1. ajouter sa clé (l'identifiant de l'agent) dans la liste `PORTRAITS` de `app.js` ;
+   2. déposer les deux images `<clé>.jpg` et `<clé>-mini.jpg` dans `portraits/` ;
+   3. ajouter `portraits/<clé>-mini.jpg` dans la liste `MINIS` de `sw.js`, puis changer la `VERSION` du service worker.
+
+### 2. Liste des agents
+1. La liste commence par la rubrique « À traiter » : les agents au verdict grave, pour qu'une alerte ne se perde pas.
+2. Viennent ensuite les 5 pôles : Pilotage, Atelier du code, Vault & idées, PC & vie perso, Autres.
+3. Dans chaque pôle, les agents en pause passent en dernier.
+4. Une rubrique vide n'apparaît pas.
+5. Les filtres (Tous, À traiter, avec IA, sans IA) ne changent pas : ils décident quels agents sont montrés, puis le classement s'applique.
+6. Dans un pôle, le nom du pôle n'est pas répété sur chaque carte, puisqu'il est déjà dans le titre.
+
+### 3. Rubriques repliables
+1. Chaque titre de rubrique est un bouton : un appui replie ou déplie la rubrique.
+2. Le titre montre le nombre d'agents et une flèche (▾ ouverte, ▸ repliée).
+3. Les rubriques repliées sont mémorisées sur ce téléphone, et retrouvées à la prochaine ouverture.
+4. Au début, tout est déplié.
+
+### 4. Fiche agent
+1. La fiche s'ouvre comme avant (liste ou scène 3D).
+2. Le grand portrait, carré, est au-dessus du nom (360 px de large au plus), avec le point du verdict dans le coin.
+3. Sans portrait, la pastille à deux lettres reste à côté du nom, comme avant.
+4. Le reste de la fiche ne change pas.
+
+### 5. Hors ligne
+1. Les miniatures sont mises en cache à l'installation : la liste a ses portraits sans connexion.
+2. Si une miniature n'a pas pu être récupérée, l'installation continue quand même, et la pastille à lettres sert de repli.
+3. Les grandes images sont gardées en cache à la première ouverture d'une fiche : hors ligne, elles ne s'affichent que pour les agents déjà ouverts une fois avec du réseau.
+4. Le service worker passe à la version v12 (`odin-mobile-v12`) : l'ancien cache est supprimé au premier lancement.
+
+
 ## Modèles : quel modèle pour ma tâche ? (2026-11-21, ODIN 5.13)
 
 Avant une tâche en IA, l'onglet **MODÈLES** (ou le bouton « Quel modèle pour ma tâche ? » de Command) montre les
