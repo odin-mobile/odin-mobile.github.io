@@ -14,6 +14,10 @@
 !manifest.webmanifest
 !etat.chiffre.json
 !modeles.chiffre.json
+!octant.chiffre.json
+# OCTANT (ODIN 5.15) : l'appli des benchmarks, sous /octant/ (tout son dossier)
+!octant/
+!octant/**
 !README.md
 !icons/
 !icons/*

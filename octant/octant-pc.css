@@ -1,0 +1,44 @@
+/* OCTANT (ODIN 5.15) — les SEULS ajouts visuels : pastille des données du PC, avertissement, écran de la phrase.
+   Uniquement les variables d'OCTANT (couleurs, polices, rayons) : suit ses 5 thèmes. Le <style> d'origine est intact. */
+
+/* (b) Pastille : même forme et même emplacement que « DÉMO », en vert ; orange si le relevé a plus de 14 jours. */
+.badge-pc{display:flex;flex-direction:column;align-items:flex-start;gap:1px;flex:none;max-width:132px;line-height:1.15;text-align:left;
+  cursor:pointer;color:var(--good);border-color:color-mix(in srgb,var(--good) 50%,transparent);
+  background:color-mix(in srgb,var(--good) 10%,transparent);transition:transform var(--dur-fast) var(--ease)}
+.badge-pc:active{transform:scale(.95)}
+.badge-pc[hidden]{display:none}
+.badge-pc .pc-l1{font-size:9.5px;white-space:nowrap}
+.badge-pc .pc-l2{font-size:9.5px;font-weight:500;letter-spacing:.02em;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.badge-pc.vieux{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 50%,transparent);background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.badge-pc.charge .pc-l1::after{content:" ⟳";display:inline-block;animation:pcTourne 1s linear infinite}
+@keyframes pcTourne{to{transform:rotate(360deg)}}
+
+/* Avertissement (décision 3), sous « 100 % local ». */
+.pc-avert{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;color:var(--ink-3);text-align:center;margin:2px 16px 0;line-height:1.45}
+.pc-avert[hidden]{display:none}
+
+/* Bloc « Données du PC » dans la feuille « Plus ». */
+.pc-bloc{border:1px solid var(--line);border-radius:var(--r-md);padding:12px;background:var(--chip);margin-bottom:14px;font-size:13px;line-height:1.45;color:var(--ink-2)}
+.pc-bloc b{color:var(--ink)}
+.pc-bloc .pc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.pc-bloc .pc-omis{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);margin-top:6px}
+
+/* (a) Écran de la phrase : un voile au-dessus de l'appli, une carte de verre. */
+.pc-verrou{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:24px 16px;
+  background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%)}
+.pc-verrou[hidden]{display:none}
+.pc-carte{width:100%;max-width:380px;border-radius:var(--r-xl);padding:26px 20px 20px;background:var(--glass-2);border:1px solid var(--line-2);
+  box-shadow:var(--shadow);text-align:center}
+.pc-carte>svg{display:block;margin:0 auto;filter:drop-shadow(0 0 14px var(--glow))}
+.pc-titre{font-family:var(--font-display);font-weight:600;font-size:22px;letter-spacing:.2em;margin:10px 0 2px}
+.pc-sous{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 18px}
+.pc-form{display:flex;flex-direction:column;gap:10px;text-align:left}
+.pc-form label{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;color:var(--ink-2)}
+.pc-form input{width:100%;min-height:46px;border-radius:12px;padding:10px 12px;border:1px solid var(--line-2);background:var(--chip);color:var(--ink);font-size:15px}
+.pc-form input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.pc-btn{min-height:46px;border-radius:14px;font-weight:700;font-size:14px;border:0;background:var(--hero);color:var(--on-accent);box-shadow:0 10px 30px -10px var(--glow)}
+.pc-btn:active{transform:scale(.97)}
+.pc-btn[disabled]{opacity:.6}
+.pc-msg{min-height:1.4em;margin:12px 0 4px;font-size:13px;color:var(--warn)}
+.pc-lien{font-size:12.5px;font-weight:700;color:var(--ink-2);text-decoration:underline;text-underline-offset:3px;background:none;border:0;padding:8px}
+.pc-note{font-size:11.5px;line-height:1.45;color:var(--ink-3);margin:8px 0 0}

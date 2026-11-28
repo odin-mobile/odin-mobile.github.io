@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="512" height="512">
+  <!-- OCTANT : le logo de l'appli (symbole #logo), couleurs du thème Neural Noir, sur son fond #05060f -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4de3ff"/><stop offset="1" stop-color="#9b6bff"/></linearGradient>
+    <radialGradient id="f" cx=".8" cy="-.1" r="1.2"><stop offset="0" stop-color="#1a1150"/><stop offset=".55" stop-color="#05060f"/></radialGradient>
+  </defs>
+  <rect width="40" height="40" rx="9" fill="url(#f)"/>
+  <polygon points="35.7,13.5 26.5,4.3 13.5,4.3 4.3,13.5 4.3,26.5 13.5,35.7 26.5,35.7 35.7,26.5" fill="url(#g)" fill-opacity=".12" stroke="url(#g)" stroke-width="1.6" stroke-linejoin="round"/>
+  <g stroke="url(#g)" stroke-width="1.4" stroke-linecap="round"><path d="M20 20L12 13M20 20L29.5 15M20 20L15.5 29M20 20L27 28"/></g>
+  <g fill="url(#g)"><circle cx="20" cy="20" r="3.4"/><circle cx="12" cy="13" r="1.7"/><circle cx="29.5" cy="15" r="1.7"/><circle cx="15.5" cy="29" r="1.7"/><circle cx="27" cy="28" r="1.7"/></g>
+</svg>
