@@ -12,6 +12,8 @@ Le dernier état connu d'ODIN (le centre de commandement personnel d'Amir), sur 
 
 Polices : Saira, Orbitron, IBM Plex Mono — SIL Open Font License 1.1 (voir `fonts/`).
 
+**OCTANT** (ODIN 5.15) : l'observatoire des benchmarks IA, alimenté par l'Observatoire d'ODIN (fichier chiffré `octant.chiffre.json`, même phrase) — https://odin-mobile.github.io/octant/ (dossier `octant/`, sa propre icône).
+
 ## Sur le téléphone
 
 ### 1. Installer
