@@ -1,0 +1,2 @@
+# OCTANT : Three.js est verifie par son empreinte (SRI) : ses octets ne doivent jamais etre convertis (fins de ligne).
+octant/vendor/three.min.js -text

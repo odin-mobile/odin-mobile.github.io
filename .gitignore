@@ -1,6 +1,7 @@
 # Le depot public ne contient QUE l'appli et l'etat chiffre.
 *
 !.gitignore
+!.gitattributes
 !index.html
 !app.css
 !app.js
