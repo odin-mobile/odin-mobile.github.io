@@ -16,6 +16,7 @@
 !etat.chiffre.json
 !modeles.chiffre.json
 !octant.chiffre.json
+!octant.json
 # OCTANT (ODIN 5.15) : l'appli des benchmarks, sous /octant/ (tout son dossier)
 !octant/
 !octant/**
